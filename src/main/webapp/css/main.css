@@ -1,0 +1,42 @@
+.custom-row {
+	padding-bottom: 10px;
+}
+
+.custom-btn {
+	//background: white;
+	color: white;
+}
+
+label input[type=radio]{
+	display: none;
+}
+
+.inner-cover {
+	width: 99%;
+	height: 400px;
+	margin-top: 30px;
+}
+
+.masthead {
+	position:initial;
+}
+
+.mastfoot {
+	position: relative;
+	bottom: 0;
+}
+
+.middle-frame{
+	max-height: 370px;
+	overflow-y: scroll;
+}
+
+html, body {
+	height: 100%;
+	background-color: #E1D2D2;
+}
+
+.masthead-nav > .active > a, .masthead-nav > .active > a:hover, .masthead-nav > .active > a:focus {
+	//color: black;
+	//border-bottom-color: black;
+}
