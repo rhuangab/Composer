@@ -1,7 +1,8 @@
 var ROOT = "/theComposerServlet";
 var CHORDNUM = 4;
 var NOTENUM = 4;
-var STAVEWIDTH = 150;
+var STAVEWIDTHUNIT = 40;
+var STAVEWIDTH = 160;
 var STAVEHEIGHT = 150;
 var STAVEPADDING = 20;
 var SPEEDBASE = 0.25;
@@ -68,12 +69,29 @@ var preDefNotes = [[[]]];
 			];
 */
 
-
-function noteToVexKey(pitchValue)
-{
+function pitchValueToVexKey(pitchValue){
 	var key = MIDI.noteToKey[pitchValue];
-	key = key[0]+'/'+key[1];
+	var level = key[key.length-1]-1+2;
+	jjj = key;
+	key = key.substring(0,key.length-1) + '/' + level;
 	return key;
+}
+
+function vexKeyToPitchValue(key)
+{
+	key = key.replace('/','');
+	var pitchValue = MIDI.keyToNote['A0'];
+}
+
+
+function createVexNote(note_struct)
+{
+	var key = pitchValueToVexKey(note_struct.keys);
+	var singleNote = new Vex.Flow.StaveNote({duration:note_struct.duration,keys:[key]});
+	if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
+	if(note_struct.keys > 70)
+		singleNote.setStemDirection(-1);
+	return singleNote;
 }
 
 function drawEmptyStaves()
@@ -127,6 +145,7 @@ function drawEmptyStaves()
 		targetButton.focus();
 		self.selectedBeats = targetButton.attr('beats');
 		self.selectedBeatType = targetButton.attr('beats-type');
+		STAVEWIDTH = self.selectedBeats * STAVEWIDTHUNIT;
 	});
 	$(".major").click(function(event){
 		targetButton = $(event.target).closest('.major');
@@ -134,10 +153,18 @@ function drawEmptyStaves()
 		targetButton.focus();
 		self.selectedMajor = targetButton.attr('value');
 	});
+	$(".instrument").click(function(event){
+		targetButton = $(event.target).closest('.instrument');
+		targetButton.siblings().removeClass('active');
+		targetButton.focus();
+		MIDI.programChange(0, targetButton.attr('value'));
+		if(targetButton.attr('value') == 40 ||targetButton.attr('value')==66) SPEEDBASE = 0.5;
+		else SPEEDBASE = 0.25;
+	});
 	MIDI.loadPlugin({
 			soundfontUrl: "./soundfont/",
-			instrument: "acoustic_grand_piano",
-			//instruments: [ "acoustic_grand_piano", "acoustic_guitar_nylon" ],
+			instruments: ["acoustic_grand_piano","glockenspiel","acoustic_guitar_nylon","violin","tenor_sax","tinkle_bell"],
+			//instrument: "acoustic_guitar_nylon",
 			callback: function() {
 				/*self.playerNote = function(note){
 					var delay = 0; // play one note every quarter second
@@ -168,8 +195,8 @@ function drawEmptyStaves()
 		self.canvas.colorNextNote();
 		var curNote = self.canvas.curPlayInfo.curPlayNotes();
 		var speed = SPEEDBASE * (4 / curNote.duration)*1000;
-		var keyValue = curNote.keys[0];
-		var noteValue = self.MIDI.keyToNote[keyValue.replace('/','').toUpperCase()];
+		//var keyValue = curNote.keys[0];
+		var noteValue = curNote.keyProps[0].int_value;
 		if(!self.canvas.curPlayInfo.isLastNote()){
 			self.MIDI.noteOn(0,noteValue,HARDNESS,0);
 			self.playerTimer = setTimeout(self.playNextNote,speed);
@@ -275,23 +302,18 @@ ViewModel.Canvas = function()
 		var cmajord = [1,0,2,0,2,1,0,2,0,2,0,2];
  		var i = self.curRow();
 		var j = self.curCol();
-		var pitchValue = myViewModel.MIDI.keyToNote[self.currentSelected().keys[0].replace('/','').toUpperCase()];
+		var pitchValue = self.currentSelected().keyProps[0].int_value;
 		if(increase){
 			if(pitchValue == 108) return;
-			pitchValue += cmajorp[pitchValue%12];
+			pitchValue += 1;//cmajorp[pitchValue%12];
 		}
 		else{
 			if(pitchValue == 21) return;
-			pitchValue -= cmajord[pitchValue%12];
+			pitchValue -= 1;//cmajord[pitchValue%12];
 		}
-		var newKey = myViewModel.MIDI.noteToKey[pitchValue];
-		console.log(pitchValue);
-		console.log(newKey);
-		newKey = newKey[0]+'/'+newKey[1];
 		var oldDuration = self.notes[i][j][self.curIndex()].duration;
-		var singleNote = new Vex.Flow.StaveNote({ keys: [newKey], duration: oldDuration });
-		if(singleNote.keys[0][2] > 4)
-		singleNote.setStemDirection(-1);
+		var singleNote = createVexNote({duration:oldDuration,keys:pitchValue});
+		//var singleNote = new Vex.Flow.StaveNote({ keys: [newKey], duration: oldDuration });
 		self.notes[i][j][self.curIndex()] = singleNote;
 		self.currentSelected(null);
 		var width = self.staveWidth;
@@ -487,12 +509,12 @@ $(document).ready(function($) {
 				preDefNotes = [[[]]];
 				var staveIndex = 0;
 				var chordIndex = 0;
-				var total = 64;
+				var total = 32;
 				var cur = 0;
 				//result = {"notes":[{"duration":"4","keys":83},{"duration":"4","keys":83},{"duration":"4","keys":80},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":76},{"duration":"4","keys":74},{"duration":"4","keys":76},{"duration":"4","keys":76},{"duration":"4","keys":73},{"duration":"4","keys":71},{"duration":"4","keys":71},{"duration":"4","keys":69},{"duration":"4","keys":68},{"duration":"4","keys":66},{"duration":"4","keys":68},{"duration":"4","keys":68},{"duration":"4","keys":69}]}
 				for(var i=0; i<result.notes.length;i++){
-					result.notes[i].duration = "2";
-					cur += 64/result.notes[i].duration;
+					//result.notes[i].duration = "4";
+					cur += 32/result.notes[i].duration;
 					if(cur > total && i > 0)
 					{
 						++chordIndex;
@@ -507,11 +529,10 @@ $(document).ready(function($) {
 						}
 						cur = 64/result.notes[i].duration;
 					}
-					result.notes[i].keys = [noteToVexKey(result.notes[i].keys)];
-					var singleNote = new Vex.Flow.StaveNote(result.notes[i]);
-					if(singleNote.keys[0][2] > 4)
-						singleNote.setStemDirection(-1);
-					preDefNotes[staveIndex][chordIndex].push(singleNote);
+					//result.notes[i].keys = [noteToVexKey(result.notes[i].keys)];
+					//result.notes[i].keys = i%2==0?['Cb/4']:['c/4'];
+					
+					preDefNotes[staveIndex][chordIndex].push(createVexNote(result.notes[i]));
 				}
 				
 				myViewModel.drawCanvas();

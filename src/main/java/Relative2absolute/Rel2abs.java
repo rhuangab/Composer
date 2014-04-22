@@ -100,23 +100,28 @@ public class Rel2abs {
 		test = com.getMelo();
 		//parse duration
 		ArrayList<Integer> dur = new ArrayList<Integer>();
-		int base = 16;
+		int base = 4;
 		dur.add(base);
 		int cur = base;
+		int maxDur = 0;
+		int minDur = 1000;
 		for(int i=0;i< com.getDur().size();i++)
 		{
 			int next = com.getDur().get(i);
 			if(next > 0)
 			{
 				cur /= next;
-				dur.add(cur);
 			}
 			else{
 				cur *= -next;
-				dur.add(cur);
 			}
-			System.out.println(next + " " + cur);
+			if(cur > 16) cur = 16;
+			if(cur < 1) cur = 2;
+			dur.add(cur);
+			maxDur = Math.max(maxDur, cur);
+			minDur = Math.min(minDur, cur);
 		}
+		System.out.println(maxDur + " " + minDur);
 		
 		//System.out.println(test.size() + " "+ com.getDur().size());
 		EndType myType = EndType.LastPeriod;
@@ -129,16 +134,21 @@ public class Rel2abs {
 			output.add(adjacentNoteGenerator(tone,test.get(i),output.get(test.size() - i - 1)));
 		}
 		
-		ArrayList<Integer> myMelody = new ArrayList<Integer>();
-		
+		//ArrayList<Integer> myMelody = new ArrayList<Integer>();
+		int maxKey = 0;
+		int minKey = 128;
+		for (int j = output.size() - 1; j >=0; j--){
+			maxKey = Math.max(maxKey, output.get(j));
+			minKey = Math.min(minKey, output.get(j));
+		}
 		JSONArray noteArray = new JSONArray();
 		for (int j = output.size() - 1; j >=0; j--){
 			//myMelody.add(output.get(j));
 			//System.out.println(com.getDur().get(j-1));
 			JSONObject jo = new JSONObject();
 			int key = output.get(j);
-			while(key > 108) key -= 12;
-			while(key < 21) key += 12;
+			while(key > base_period_second_notes[tone][0]+18) key -= 12;
+			while(key < base_period_second_notes[tone][0]-18) key += 12;
 			jo.put("keys", key);
 			jo.put("duration",""+dur.get(j));
 			noteArray.put(jo);

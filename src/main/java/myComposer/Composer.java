@@ -192,10 +192,11 @@ public class Composer {
 		//generate duration according to melo
 		successLen = 0;
 		startPos = 0;
-		
+		int a[] = {1,-2,1,1,2,1,2,1,1,2};
+		int index = 0;
 		while(startPos < melo.size() - MIN) {
 			boolean find = false;
-			
+			index++;
 			for(int i = MAX; i>MIN;i--) {
 				ArrayList<Integer> searchResult = new ArrayList<Integer>();
 				
@@ -228,7 +229,7 @@ public class Composer {
 			if(!find) {
 				//System.out.println("cannnot find for any size");
 				startPos++;
-				dur.add(new Integer(1));
+				dur.add(a[index%10]);
 			}
 			
 		}
