@@ -84,30 +84,49 @@ public class Rel2abs {
 //			myMelody.add(output.get(j));
 //			System.out.println(output.get(j));
 //		}
-		getJsonOutput(input, 4, 2);
+		getJsonOutput(input, 4, 2,0);
 	}//211111112-221111-12-432-3164
 	//1-33-31111111-4111111111169
 	
-	public static JSONArray getJsonOutput(String inputLrc, int octave, int step) throws IOException
+	public static JSONArray getJsonOutput(String inputLrc, int beatType, int beats, int tone) throws IOException
 	{
-		inputLrc = inputLrc.replace("‘", "'");
-		inputLrc = inputLrc.replace("？", "?");
-		inputLrc = inputLrc.replace("！", "!");
-		inputLrc = inputLrc.replace("，", ",");
-		inputLrc = inputLrc.replace("。", ".");
-		Composer com = new Composer(inputLrc,octave,step);
+//		inputLrc = inputLrc.replace("", "'");
+//		inputLrc = inputLrc.replace("", "?");
+//		inputLrc = inputLrc.replace("", "!");
+//		inputLrc = inputLrc.replace("", ",");
+//		inputLrc = inputLrc.replace("", ".");
+		Composer com = new Composer(inputLrc,beatType,beats);
 		ArrayList<Integer>test = new ArrayList<Integer>();
 		test = com.getMelo();
-		for(int i=0;i<com.getDur().size();i++) System.out.print(com.getDur().get(i));
+		//parse duration
+		ArrayList<Integer> dur = new ArrayList<Integer>();
+		int base = 16;
+		dur.add(base);
+		int cur = base;
+		for(int i=0;i< com.getDur().size();i++)
+		{
+			int next = com.getDur().get(i);
+			if(next > 0)
+			{
+				cur /= next;
+				dur.add(cur);
+			}
+			else{
+				cur *= -next;
+				dur.add(cur);
+			}
+			System.out.println(next + " " + cur);
+		}
+		
 		//System.out.println(test.size() + " "+ com.getDur().size());
 		EndType myType = EndType.LastPeriod;
 		ArrayList<Integer>output = new ArrayList<Integer>();
-		ArrayList<Integer> endNotes = EndNotesGenerator(0,myType,test.get(test.size() - 1));
+		ArrayList<Integer> endNotes = EndNotesGenerator(tone,myType,test.get(test.size() - 1));
 		output.add(endNotes.get(1));
 		output.add(endNotes.get(0));
 		
 		for (int i = test.size() - 2; i>=0 ; i--){
-			output.add(adjacentNoteGenerator(0,test.get(i),output.get(test.size() - i - 1)));
+			output.add(adjacentNoteGenerator(tone,test.get(i),output.get(test.size() - i - 1)));
 		}
 		
 		ArrayList<Integer> myMelody = new ArrayList<Integer>();
@@ -115,14 +134,13 @@ public class Rel2abs {
 		JSONArray noteArray = new JSONArray();
 		for (int j = output.size() - 1; j >=0; j--){
 			//myMelody.add(output.get(j));
-			System.out.println(output.get(j));
 			//System.out.println(com.getDur().get(j-1));
 			JSONObject jo = new JSONObject();
 			int key = output.get(j);
 			while(key > 108) key -= 12;
 			while(key < 21) key += 12;
 			jo.put("keys", key);
-			jo.put("duration","4");
+			jo.put("duration",""+dur.get(j));
 			noteArray.put(jo);
 		}
 		//System.out.println(noteArray.toString());

@@ -13,7 +13,7 @@ label input[type=radio]{
 
 .inner-cover {
 	width: 99%;
-	height: 400px;
+	height: 350px;
 	margin-top: 30px;
 }
 
@@ -27,13 +27,13 @@ label input[type=radio]{
 }
 
 .middle-frame{
-	max-height: 370px;
+	max-height: 330px;
 	overflow-y: scroll;
 }
 
 html, body {
 	height: 100%;
-	background-color: #E1D2D2;
+	background-color: #0FA794;
 }
 
 .masthead-nav > .active > a, .masthead-nav > .active > a:hover, .masthead-nav > .active > a:focus {

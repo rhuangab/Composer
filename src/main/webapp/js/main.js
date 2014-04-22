@@ -2,9 +2,12 @@ var ROOT = "/theComposerServlet";
 var CHORDNUM = 4;
 var NOTENUM = 4;
 var STAVEWIDTH = 150;
-var STAVEHEIGHT = 100;
-var STAVEPADDING = 10;
-var preDefNotes = [[
+var STAVEHEIGHT = 150;
+var STAVEPADDING = 20;
+var SPEEDBASE = 0.25;
+var HARDNESS = 100;
+var preDefNotes = [[[]]];
+/*var preDefNotes = [[
 		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
       new Vex.Flow.StaveNote({ keys: ["D/4"], duration: "4" }),
       new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
@@ -63,7 +66,8 @@ var preDefNotes = [[
       new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
 			]]
 			];
-var SPEEDBASE = 0.2;
+*/
+
 
 function noteToVexKey(pitchValue)
 {
@@ -99,7 +103,6 @@ function drawEmptyStaves()
 			staveBar.setContext(ctx).draw();
 		}
 	}
-	
 }
 
 (function ($) {
@@ -122,11 +125,14 @@ function drawEmptyStaves()
 		targetButton = $(event.target).closest('.beats');
 		targetButton.siblings().removeClass('active');
 		targetButton.focus();
+		self.selectedBeats = targetButton.attr('beats');
+		self.selectedBeatType = targetButton.attr('beats-type');
 	});
 	$(".major").click(function(event){
 		targetButton = $(event.target).closest('.major');
 		targetButton.siblings().removeClass('active');
 		targetButton.focus();
+		self.selectedMajor = targetButton.attr('value');
 	});
 	MIDI.loadPlugin({
 			soundfontUrl: "./soundfont/",
@@ -165,12 +171,12 @@ function drawEmptyStaves()
 		var keyValue = curNote.keys[0];
 		var noteValue = self.MIDI.keyToNote[keyValue.replace('/','').toUpperCase()];
 		if(!self.canvas.curPlayInfo.isLastNote()){
-			self.MIDI.noteOn(0,noteValue,127,0);
+			self.MIDI.noteOn(0,noteValue,HARDNESS,0);
 			self.playerTimer = setTimeout(self.playNextNote,speed);
 		}
 		else
 		{
-			self.MIDI.noteOn(0,noteValue,127,0);
+			self.MIDI.noteOn(0,noteValue,HARDNESS,0);
 			self.canvas.colorNextNote();
 			//self.canvas.curPlayInfo.setDefaultValue();
 			setTimeout(function(){$(".player[value='stop']").click()},speed);
@@ -283,7 +289,10 @@ ViewModel.Canvas = function()
 		console.log(newKey);
 		newKey = newKey[0]+'/'+newKey[1];
 		var oldDuration = self.notes[i][j][self.curIndex()].duration;
-		self.notes[i][j][self.curIndex()] = new Vex.Flow.StaveNote({ keys: [newKey], duration: oldDuration });
+		var singleNote = new Vex.Flow.StaveNote({ keys: [newKey], duration: oldDuration });
+		if(singleNote.keys[0][2] > 4)
+		singleNote.setStemDirection(-1);
+		self.notes[i][j][self.curIndex()] = singleNote;
 		self.currentSelected(null);
 		var width = self.staveWidth;
 		var x = self.staveWidth*j;
@@ -294,7 +303,6 @@ ViewModel.Canvas = function()
 		console.log(clearWidth);
 //		self.canvas.getContext('2d').clearRect(clearX,y,clearWidth-1,self.staveHeight);
 		self.redraw();
-		console.log(self.notes[i][j]);
 //		self.setContextColor('black');
 //		self.drawTempoStaveBar(x,y,width, {}, 0,self.notes[i][j]);
 //		self.setContextColor('red');
@@ -459,7 +467,13 @@ $(document).ready(function($) {
 	ko.applyBindings(myViewModel);
 	drawEmptyStaves();
 	jsonResult = {};
+	$('<input>').attr({type: 'hidden',name:'major',value:myViewModel.selectedMajor}).appendTo('form');
+	$('<input>').attr({type: 'hidden',name:'beats',value:myViewModel.selectedBeats}).appendTo('form');
+	$('<input>').attr({type: 'hidden',name:'beatType',value:myViewModel.selectedBeatType}).appendTo('form');
 	$("#create_button").click(function(){
+		$('input[name=major]').attr('value',myViewModel.selectedMajor);
+		$('input[name=beats]').attr('value',myViewModel.selectedBeats);
+		$('input[name=beatType]').attr('value',myViewModel.selectedBeatType);
 		$.ajax({
 			url: ROOT,
 			type: 'POST',
@@ -475,7 +489,9 @@ $(document).ready(function($) {
 				var chordIndex = 0;
 				var total = 64;
 				var cur = 0;
+				//result = {"notes":[{"duration":"4","keys":83},{"duration":"4","keys":83},{"duration":"4","keys":80},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":76},{"duration":"4","keys":74},{"duration":"4","keys":76},{"duration":"4","keys":76},{"duration":"4","keys":73},{"duration":"4","keys":71},{"duration":"4","keys":71},{"duration":"4","keys":69},{"duration":"4","keys":68},{"duration":"4","keys":66},{"duration":"4","keys":68},{"duration":"4","keys":68},{"duration":"4","keys":69}]}
 				for(var i=0; i<result.notes.length;i++){
+					result.notes[i].duration = "2";
 					cur += 64/result.notes[i].duration;
 					if(cur > total && i > 0)
 					{
@@ -492,7 +508,10 @@ $(document).ready(function($) {
 						cur = 64/result.notes[i].duration;
 					}
 					result.notes[i].keys = [noteToVexKey(result.notes[i].keys)];
-					preDefNotes[staveIndex][chordIndex].push(new Vex.Flow.StaveNote(result.notes[i]));
+					var singleNote = new Vex.Flow.StaveNote(result.notes[i]);
+					if(singleNote.keys[0][2] > 4)
+						singleNote.setStemDirection(-1);
+					preDefNotes[staveIndex][chordIndex].push(singleNote);
 				}
 				
 				myViewModel.drawCanvas();

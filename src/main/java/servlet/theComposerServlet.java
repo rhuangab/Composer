@@ -75,7 +75,10 @@ public class theComposerServlet extends HttpServlet {
 		FilePath.generatedMIDI = this.getClass().getClassLoader().getResource("src/main/resources/generatedFile.mid").getPath();
 		response.setContentType("application/json;charset=utf-8");
 		String inputLrc = request.getParameter("lrc");
-		JSONArray notes = Rel2abs.getJsonOutput(inputLrc, 4, 4);
+		int beats = Integer.parseInt(request.getParameter("beats"));
+		int beatType = Integer.parseInt(request.getParameter("beatType"));
+		int tone = Integer.parseInt(request.getParameter("major"));
+		JSONArray notes = Rel2abs.getJsonOutput(inputLrc, beatType, beats,tone);
 		//Composer com1 = new Composer(inputLrc,4,4);
 		//String jsonResult = com1.getJSONOutput();
 		//JSONArray ja = new JSONArray(jsonResult);
