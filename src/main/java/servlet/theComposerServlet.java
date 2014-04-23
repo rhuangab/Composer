@@ -78,7 +78,8 @@ public class theComposerServlet extends HttpServlet {
 		int beats = Integer.parseInt(request.getParameter("beats"));
 		int beatType = Integer.parseInt(request.getParameter("beatType"));
 		int tone = Integer.parseInt(request.getParameter("major"));
-		JSONArray notes = Rel2abs.getJsonOutput(inputLrc, beatType, beats,tone);
+		int scale = Integer.parseInt(request.getParameter("scale"))-5;
+		JSONArray notes = Rel2abs.getJsonOutput(inputLrc, beatType, beats,tone,scale);
 		//Composer com1 = new Composer(inputLrc,4,4);
 		//String jsonResult = com1.getJSONOutput();
 		//JSONArray ja = new JSONArray(jsonResult);

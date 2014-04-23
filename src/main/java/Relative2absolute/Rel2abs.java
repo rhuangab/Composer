@@ -3,6 +3,7 @@ package Relative2absolute;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.Sequence;
@@ -53,6 +54,21 @@ public class Rel2abs {
 		{65,69,72}, {70,74,77}, {63,67,71}, {68,72,75}, {61,65,68}, {66,70,73}
 		};
 	
+	public static HashMap<Integer,Integer> nextDur;
+	
+	public static void initialize(){
+		nextDur = new HashMap<Integer,Integer>();
+		nextDur.put(2, 4);
+		nextDur.put(4, 6);
+		nextDur.put(6, 8);
+		nextDur.put(8, 12);
+		nextDur.put(12, 16);
+		nextDur.put(16, 24);
+		nextDur.put(24, 32);
+		nextDur.put(32, 48);
+		nextDur.put(48, 64);
+	}
+	
 	public enum EndType{
 		LastPeriod,Period,Comma
 	}
@@ -84,28 +100,49 @@ public class Rel2abs {
 //			myMelody.add(output.get(j));
 //			System.out.println(output.get(j));
 //		}
-		getJsonOutput(input, 4, 2,0);
-	}//211111112-221111-12-432-3164
-	//1-33-31111111-4111111111169
+		getJsonOutput(input, 4, 2,0,0);
+	}
 	
-	public static JSONArray getJsonOutput(String inputLrc, int beatType, int beats, int tone) throws IOException
+	public static int findClosest(int key,int max){
+		if(nextDur == null) initialize();
+		max = Math.min(max, 64);
+		if(key < 4) return 4;
+		else if(key >= max) return max;
+		else if(key< max && nextDur.get(key) == null){
+			int base = 4;
+			while(nextDur.get(base) < key && base < max){
+				base = nextDur.get(base);
+			}
+			return base;
+		}
+		else return key;
+	}
+	
+	public static JSONArray getJsonOutput(String inputLrc, int beatType, int beats, int tone,int scale) throws IOException
 	{
+		if(nextDur == null) initialize();
 //		inputLrc = inputLrc.replace("", "'");
 //		inputLrc = inputLrc.replace("", "?");
 //		inputLrc = inputLrc.replace("", "!");
 //		inputLrc = inputLrc.replace("", ",");
 //		inputLrc = inputLrc.replace("", ".");
+		base_period_second_notes[tone][0] += scale*12;
+		base_period_second_notes[tone][1] += scale*12;
+		base_period_second_notes[tone][2] += scale*12;
 		Composer com = new Composer(inputLrc,beatType,beats);
 		ArrayList<Integer>test = new ArrayList<Integer>();
 		test = com.getMelo();
 		//parse duration
 		ArrayList<Integer> dur = new ArrayList<Integer>();
-		int base = 4;
+		int base = 16;
+		int sumInEveryMeasure = beats * 16;
 		dur.add(base);
 		int cur = base;
 		int maxDur = 0;
 		int minDur = 1000;
-		for(int i=0;i< com.getDur().size();i++)
+		int last = 0;
+		int times = 0;
+		for(int i=com.getDur().size()-1;i>= 0;--i)
 		{
 			int next = com.getDur().get(i);
 			if(next > 0)
@@ -115,13 +152,26 @@ public class Rel2abs {
 			else{
 				cur *= -next;
 			}
-			if(cur > 16) cur = 16;
-			if(cur < 1) cur = 2;
+			if(cur == last) times++;
+			if(times > 1 && cur >= 32){
+				cur = 16;
+				times = 0;
+			}
+			else if(times > 3 && cur <=4){
+				cur = 4;
+				times = 0;
+			}
+			cur = findClosest(cur,sumInEveryMeasure);
 			dur.add(cur);
 			maxDur = Math.max(maxDur, cur);
 			minDur = Math.min(minDur, cur);
 		}
-		System.out.println(maxDur + " " + minDur);
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		for(int i=dur.size()-1;i>= 0;--i){
+			temp.add(dur.get(i));
+		}
+		ArrayList<ArrayList<Integer> > newDur = adjustDur(temp,sumInEveryMeasure);
+		//System.out.println(maxDur + " " + minDur);
 		
 		//System.out.println(test.size() + " "+ com.getDur().size());
 		EndType myType = EndType.LastPeriod;
@@ -135,32 +185,126 @@ public class Rel2abs {
 		}
 		
 		//ArrayList<Integer> myMelody = new ArrayList<Integer>();
-		int maxKey = 0;
-		int minKey = 128;
-		for (int j = output.size() - 1; j >=0; j--){
-			maxKey = Math.max(maxKey, output.get(j));
-			minKey = Math.min(minKey, output.get(j));
-		}
+//		int maxKey = 0;
+//		int minKey = 128;
+//		for (int j = output.size() - 1; j >=0; j--){
+//			maxKey = Math.max(maxKey, output.get(j));
+//			minKey = Math.min(minKey, output.get(j));
+//		}
 		JSONArray noteArray = new JSONArray();
-		for (int j = output.size() - 1; j >=0; j--){
-			//myMelody.add(output.get(j));
-			//System.out.println(com.getDur().get(j-1));
-			JSONObject jo = new JSONObject();
-			int key = output.get(j);
-			while(key > base_period_second_notes[tone][0]+18) key -= 12;
-			while(key < base_period_second_notes[tone][0]-18) key += 12;
-			jo.put("keys", key);
-			jo.put("duration",""+dur.get(j));
-			noteArray.put(jo);
+		int k = output.size()-1;
+		//System.out.println(temp.size() + " "+output.size() + " "+output.get(0));
+		for(int i=0;i<newDur.size();i++){
+			//ArrayList<Integer> measure = new ArrayList<Integer>();
+			JSONArray measureArray = new JSONArray();
+			for(int j=0;j<newDur.get(i).size();j++)
+			{
+				JSONObject jo = new JSONObject();
+				int key = output.get(k--);
+				System.out.println(k + " "+ key);
+				while(key > base_period_second_notes[tone][0]+12) key -= 12;
+				while(key < base_period_second_notes[tone][0]-12) key += 12;
+				jo.put("keys", key);
+				jo.put("duration",""+newDur.get(i).get(j));
+				measureArray.put(jo);
+			}
+			noteArray.put(measureArray);
 		}
+//		for (int j = output.size() - 1; j >=0; j--){
+//			//myMelody.add(output.get(j));
+//			//System.out.println(com.getDur().get(j-1));
+//			JSONObject jo = new JSONObject();
+//			int key = output.get(j);
+//			while(key > base_period_second_notes[tone][0]+12) key -= 12;
+//			while(key < base_period_second_notes[tone][0]-12) key += 12;
+//			jo.put("keys", key);
+//			jo.put("duration",""+dur.get(j));
+//			noteArray.put(jo);
+//		}
 		//System.out.println(noteArray.toString());
-		
+		base_period_second_notes[tone][0] -= scale*12;
+		base_period_second_notes[tone][1] -= scale*12;
+		base_period_second_notes[tone][2] -= scale*12;
 		return noteArray;
 	}
 	
+	public static int nextNDur(int key,int i)
+	{
+		if(nextDur == null) initialize();
+		int j = 0;
+		int result = key;
+		while(j++ < i)
+		{
+			if(result >= 64){
+				result = 64;
+				break;
+			}
+			result = nextDur.get(result);
+		}
+		return result;
+	}
 	
-	public static String getRandomNote(ArrayList<String> arr){
-		return arr.get((int)(Math.random() * arr.size()));
+	public static ArrayList<ArrayList<Integer> > adjustDur(ArrayList<Integer> dur, int sum)
+	{
+		ArrayList<ArrayList<Integer> > result = new ArrayList<ArrayList<Integer> >();
+		ArrayList<Integer> cur = null;
+		int curSum = 0; 
+		for(int i=0;i<dur.size();i++)
+		{
+			if(cur == null) cur = new ArrayList<Integer>();
+			int next = dur.get(i);
+			if(curSum+next < sum){
+				curSum+=next;
+				cur.add(next);
+			}
+			else if(curSum + next == sum){
+				cur.add(next);
+				result.add(cur);
+				curSum = 0;
+				cur = null;
+			}
+			else{
+				int iter = 1;
+				boolean adjusted = false;
+				while(iter <= 9){
+					for(int j = cur.size()-1;j>=0;--j)
+					{
+						int tempDur = cur.get(j);
+						int tempAdd = nextNDur(tempDur,iter);
+						if( tempAdd - tempDur + curSum == sum){
+							cur.set(j, tempAdd);
+							result.add(cur);
+							curSum = 0;
+							adjusted = true;
+							iter = 10;
+							break;
+						}
+					}
+					++iter;
+				}
+				if(!adjusted){
+					result.add(cur);
+					cur = null;
+					curSum = 0;
+				}
+				cur = new ArrayList<Integer>();
+				cur.add(next);
+			}
+			if(i == dur.size()-1) {
+				result.add(cur);
+				cur = null;
+			}
+		}
+		int count = 0;
+		for(int i=0;i<result.size();i++){
+			String a = "";
+			int ssize = result.get(i).size();
+			for(int j=0;j<ssize;j++){
+				a += " " + result.get(i).get(j);
+				count++;
+			}
+		}
+		return result;
 	}
 	
 	public static Integer adjacentNoteGenerator (int my_tone, int diff, int latterPitch){

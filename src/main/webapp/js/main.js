@@ -5,7 +5,8 @@ var STAVEWIDTHUNIT = 40;
 var STAVEWIDTH = 160;
 var STAVEHEIGHT = 150;
 var STAVEPADDING = 20;
-var SPEEDBASE = 0.25;
+var SPEEDUNIT = 0.200;
+var SPEEDBASE = SPEEDUNIT;
 var HARDNESS = 100;
 var preDefNotes = [[[]]];
 /*var preDefNotes = [[
@@ -86,9 +87,24 @@ function vexKeyToPitchValue(key)
 
 function createVexNote(note_struct)
 {
+	var dur = {
+		'2':[2,0,32],
+		'4':[4,0,16],
+		'6':[4,1,16],
+		'8':[8,0,8],
+		'12':[8,1,8],
+		'16':[16,0,4],
+		'24':[24,1,4],
+		'32':[32,0,2],
+		'48':[32,1,2],
+		'64':[64,0,1]
+		};
 	var key = pitchValueToVexKey(note_struct.keys);
-	var singleNote = new Vex.Flow.StaveNote({duration:note_struct.duration,keys:[key]});
+	var newDur = dur[note_struct.duration][2];
+	var hasDot = dur[note_struct.duration][1] == 1?true:false;
+	var singleNote = new Vex.Flow.StaveNote({duration:""+newDur,keys:[key]});
 	if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
+	if(hasDot) singleNote.addDotToAll();
 	if(note_struct.keys > 70)
 		singleNote.setStemDirection(-1);
 	return singleNote;
@@ -133,6 +149,8 @@ function drawEmptyStaves()
 	self.selectedBeats = 4;
 	self.selectedBeatType = 4;
 	self.selectedMajor = 0;
+	self.selectedScale = ko.observable(4);
+	self.playSpeed = ko.observable(1);
 	$(".player").click(function(event){
 		targetButton = $(event.target).closest('.player');
 		targetButton.siblings().removeClass('active');
@@ -160,6 +178,26 @@ function drawEmptyStaves()
 		MIDI.programChange(0, targetButton.attr('value'));
 		if(targetButton.attr('value') == 40 ||targetButton.attr('value')==66) SPEEDBASE = 0.5;
 		else SPEEDBASE = 0.25;
+	});
+	$(".scale").click(function(event){
+		targetButton = $(event.target).closest('.scale');
+		targetButton.siblings().removeClass('active');
+		//targetButton.focus();
+		var temp = self.selectedScale();
+		self.selectedScale(temp + parseInt(targetButton.attr('value')));
+		if(self.selectedScale() < 2) self.selectedScale(self.selectedScale()+1);
+		else if(self.selectedScale() > 8) self.selectedScale(self.selectedScale()-1);
+	});
+	$(".speed").click(function(event){
+		targetButton = $(event.target).closest('.speed');
+		targetButton.siblings().removeClass('active');
+		//targetButton.focus();
+		var temp = self.playSpeed();
+		var temp = temp + parseInt(targetButton.attr('value'));
+		if(temp < 0) self.playSpeed(1);
+		else if(temp > 5) self.playSpeed(5);
+		else self.playSpeed(temp);
+		SPEEDBASE = SPEEDUNIT / self.playSpeed();
 	});
 	MIDI.loadPlugin({
 			soundfontUrl: "./soundfont/",
@@ -492,10 +530,12 @@ $(document).ready(function($) {
 	$('<input>').attr({type: 'hidden',name:'major',value:myViewModel.selectedMajor}).appendTo('form');
 	$('<input>').attr({type: 'hidden',name:'beats',value:myViewModel.selectedBeats}).appendTo('form');
 	$('<input>').attr({type: 'hidden',name:'beatType',value:myViewModel.selectedBeatType}).appendTo('form');
+	$('<input>').attr({type: 'hidden',name:'scale',value:myViewModel.selectedScale()}).appendTo('form');
 	$("#create_button").click(function(){
 		$('input[name=major]').attr('value',myViewModel.selectedMajor);
 		$('input[name=beats]').attr('value',myViewModel.selectedBeats);
 		$('input[name=beatType]').attr('value',myViewModel.selectedBeatType);
+		$('input[name=scale]').attr('value',myViewModel.selectedScale());
 		$.ajax({
 			url: ROOT,
 			type: 'POST',
@@ -513,26 +553,36 @@ $(document).ready(function($) {
 				var cur = 0;
 				//result = {"notes":[{"duration":"4","keys":83},{"duration":"4","keys":83},{"duration":"4","keys":80},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":76},{"duration":"4","keys":74},{"duration":"4","keys":76},{"duration":"4","keys":76},{"duration":"4","keys":73},{"duration":"4","keys":71},{"duration":"4","keys":71},{"duration":"4","keys":69},{"duration":"4","keys":68},{"duration":"4","keys":66},{"duration":"4","keys":68},{"duration":"4","keys":68},{"duration":"4","keys":69}]}
 				for(var i=0; i<result.notes.length;i++){
-					//result.notes[i].duration = "4";
-					cur += 32/result.notes[i].duration;
-					if(cur > total && i > 0)
-					{
-						++chordIndex;
-						if(chordIndex%CHORDNUM == 0)
-						{
-							++staveIndex;
-							preDefNotes.push([[]]);
-							chordIndex = 0;
-						}
-						else{
-							preDefNotes[staveIndex].push([]);
-						}
-						cur = 64/result.notes[i].duration;
+					console.log(parseInt(i/CHORDNUM)+" "+i%CHORDNUM);
+					if(i%CHORDNUM==0){
+						preDefNotes.push([[]]);
 					}
-					//result.notes[i].keys = [noteToVexKey(result.notes[i].keys)];
-					//result.notes[i].keys = i%2==0?['Cb/4']:['c/4'];
+					else{
+					 	preDefNotes[parseInt(i/CHORDNUM)].push([]);
+					}
 					
-					preDefNotes[staveIndex][chordIndex].push(createVexNote(result.notes[i]));
+					for(var j=0; j<result.notes[i].length;j++){
+						//result.notes[i].duration = "4";
+	//					cur += 32/result.notes[i].duration;
+	//					if(cur > total && i > 0)
+	//					{
+	//						++chordIndex;
+	//						if(chordIndex%CHORDNUM == 0)
+	//						{
+	//							++staveIndex;
+	//							preDefNotes.push([[]]);
+	//							chordIndex = 0;
+	//						}
+	//						else{
+	//							preDefNotes[staveIndex].push([]);
+	//						}
+	//						cur = 32/result.notes[i].duration;
+	//					}
+						//result.notes[i].keys = [noteToVexKey(result.notes[i].keys)];
+						//result.notes[i].keys = i%2==0?['Cb/4']:['c/4'];
+						
+						preDefNotes[parseInt(i/CHORDNUM)][i%CHORDNUM].push(createVexNote(result.notes[i][j]));
+					}
 				}
 				
 				myViewModel.drawCanvas();

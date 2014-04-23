@@ -40,11 +40,11 @@ public class Composer {
 
 	private static String str;
 	private static HTree hashtable;
-	public static String jasonResult;
-	private static  HashMap<String, Integer> beatsMap;
-	private static ArrayList<Integer> lrc;
-	private static ArrayList<Integer> melo;
-	private static ArrayList<Integer> dur;
+	public String jasonResult;
+	private static HashMap<String, Integer> beatsMap;
+	private ArrayList<Integer> lrc;
+	private ArrayList<Integer> melo;
+	private ArrayList<Integer> dur;
 	private ArrayList<Integer> beatArray;
 	static String beatFirst;
 	static String beatSecond;
@@ -62,14 +62,14 @@ public class Composer {
 		
 		//test
 	    //Sequence sequence = MidiSystem.getSequence(new File("/Users/jzhaoaf/Desktop/2_hearts.mid"));
-		Sequence sequence = generateSequence(melo,dur);
+		//Sequence sequence = generateSequence(melo,dur);
 		
 		
 	   
 	    //play the generate sequence
-	    MidiPlayer myPlayer = new MidiPlayer();
-	    myPlayer.play(sequence, false);
-	    myPlayer.stop();
+	    //MidiPlayer myPlayer = new MidiPlayer();
+	    //myPlayer.play(sequence, false);
+	    //myPlayer.stop();
 	
 		
 	}
@@ -84,7 +84,7 @@ public class Composer {
 		this.str = input;
 		beatFirst = Integer.toString(first);
 		beatSecond = Integer.toString(second);
-		beatMap();
+		if(beatsMap ==null) beatMap();
 		beatArray = new ArrayList<Integer>();
 		
 		for(int i = 1; i <= Integer.parseInt(beatSecond); ++i) {
@@ -95,21 +95,20 @@ public class Composer {
 			
 		}
 		
-		
-		
-		allPatternOne = new HashMap<Integer, HashSet<SequencePair> >();
-		allPatternTwo = new HashMap<Integer, HashSet<SequencePair> >();
-		
-		for(int i = MIN; i <=MAX; ++i) {
-			allPatternOne.put(new Integer(i), new HashSet<SequencePair>());
-			allPatternTwo.put(new Integer(i), new HashSet<SequencePair>());
-		} 
-		
-		readInPatterns(FilePath.allPatternOne,true);
-		readInPatterns(FilePath.allPatternTwo,false);
-
-		
-		
+		if(allPatternOne == null){
+			allPatternOne = new HashMap<Integer, HashSet<SequencePair> >();
+			for(int i = MIN; i <=MAX; ++i) {
+				allPatternOne.put(new Integer(i), new HashSet<SequencePair>());
+			}
+			readInPatterns(FilePath.allPatternOne,true);
+		}
+		if(allPatternTwo == null){
+			allPatternTwo = new HashMap<Integer, HashSet<SequencePair> >();
+			for(int i = MIN; i <=MAX; ++i) {
+				allPatternTwo.put(new Integer(i), new HashSet<SequencePair>());
+			}
+			readInPatterns(FilePath.allPatternTwo,false);
+		}
 		
 		lrc = parseLrc();
 		//System.out.println(lrc);
@@ -176,7 +175,7 @@ public class Composer {
 		}
 		
 		//deal with the end 
-		while(startPos!= lrc.size()) {
+		while(startPos< lrc.size() && startPos!= lrc.size()) {
 			melo.add(new Integer(0));
 			startPos++;
 		}
@@ -192,7 +191,7 @@ public class Composer {
 		//generate duration according to melo
 		successLen = 0;
 		startPos = 0;
-		int a[] = {1,-2,1,1,2,1,2,1,1,2};
+		int a[] = {1,-2,2};
 		int index = 0;
 		while(startPos < melo.size() - MIN) {
 			boolean find = false;
@@ -229,13 +228,13 @@ public class Composer {
 			if(!find) {
 				//System.out.println("cannnot find for any size");
 				startPos++;
-				dur.add(a[index%10]);
+				dur.add(a[index%3]);
 			}
 			
 		}
 		
 		//deal with the end 
-		while(startPos!= lrc.size()) {
+		while(startPos< lrc.size() && startPos!= lrc.size()) {
 			dur.add(new Integer(1));
 			startPos++;
 		}
@@ -278,7 +277,7 @@ public class Composer {
 	}
 
 
-	private static ArrayList<Integer> parseLrc() throws IOException {
+	private ArrayList<Integer> parseLrc() throws IOException {
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		
 		str = str.replace("[^a-zA-Z]", "");
@@ -324,37 +323,37 @@ public class Composer {
 		return result;
 		
 	}
-	static void getJason() {
-		  
-		
-		jasonResult = "[";
-		//int first = startOne;
-		//int two = startTwo;
-		  
-	       
-	       for(int i = 0; i < lrc.size(); ++i) {
-	    	   /*first+=lrc.get(i);
-	    	   //System.out.println(lrc);
-	    	   if(dur.get(i) > 0) {
-	    		   two = two * dur.get(i);
-	    	   }
-	    	   else 
-	    		   two = two / dur.get(i) * (-1);
-	    	   if(two > 64) {
-	    		   two =64;
-	    	   }
-	    	   if(two< 1)
-	    		   two = 1;*/
-	    	   
-	    	   jasonResult = jasonResult +  "{keys:" + melo.get(i) +"," +"duration:" + dur.get(i) +"},";
-	 
-	       }
-	       jasonResult = jasonResult.substring(0, jasonResult.length()-1);
-	       jasonResult+="]";
-	       //System.out.println(jasonResult);
-	       
-		
-	}
+//	static void getJason() {
+//		  
+//		
+//		jasonResult = "[";
+//		//int first = startOne;
+//		//int two = startTwo;
+//		  
+//	       
+//	       for(int i = 0; i < lrc.size(); ++i) {
+//	    	   /*first+=lrc.get(i);
+//	    	   //System.out.println(lrc);
+//	    	   if(dur.get(i) > 0) {
+//	    		   two = two * dur.get(i);
+//	    	   }
+//	    	   else 
+//	    		   two = two / dur.get(i) * (-1);
+//	    	   if(two > 64) {
+//	    		   two =64;
+//	    	   }
+//	    	   if(two< 1)
+//	    		   two = 1;*/
+//	    	   
+//	    	   jasonResult = jasonResult +  "{keys:" + melo.get(i) +"," +"duration:" + dur.get(i) +"},";
+//	 
+//	       }
+//	       jasonResult = jasonResult.substring(0, jasonResult.length()-1);
+//	       jasonResult+="]";
+//	       //System.out.println(jasonResult);
+//	       
+//		
+//	}
 	
 	
 	public static Sequence generateSequence(ArrayList<Integer> melo,ArrayList<Integer> dur) throws InvalidMidiDataException, IOException {
@@ -519,7 +518,7 @@ public class Composer {
 		return dur;
 	}
 	
-	static void beatMap() {
+	public static void beatMap() {
 		beatsMap = new HashMap<String,Integer>();
 		beatsMap.put("2+2+1", 3);
 		beatsMap.put("2+2+2", 3);

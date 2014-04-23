@@ -117,15 +117,32 @@
 					<div class="row custom-row"></div>
 					<div class="row custom-row">
 						<div class="col-lg-2"></div>
-						<div class="col-lg-6">
+						<div class="col-lg-10">
+							<div class="btn-toolbar" role="toolbar">
+								<div class="btn-group" style="float:left">
+									<button type="button" class="btn btn-primary scale" value="1"><span class="glyphicon glyphicon-chevron-up"></span></button>
+									<button type="button" class="btn btn-primary"><span>Octave</span></button>
+									<button type="button" class="btn btn-primary"><span data-bind="text:selectedScale"></span></button>
+									<button type="button" class="btn btn-primary scale" value="-1"><span class="glyphicon glyphicon-chevron-down"></span></button>
+								</div>
+								<div class="btn-group" style="float:left">
+									<button type="button" class="btn btn-primary speed" value="1"><span class="glyphicon glyphicon-plus"></span></button>
+									<button type="button" class="btn btn-primary"><span>Speed</span></button>
+									<button type="button" class="btn btn-primary"><span data-bind="text:playSpeed"></span></button>
+									<button type="button" class="btn btn-primary speed" value="-1"><span class="glyphicon glyphicon-minus"></span></button>
+								</div>
+							<!--</div>
+						</div>
+						<div class="col-lg-6">-->
 							<div class="btn-group" data-toggle="buttons" style="float:left">
-								<button type="button" class="btn btn-primary instrument" value=0><span>Piano</span></button>
+								<button type="button" class="btn btn-primary instrument active" value=0><span>Piano</span></button>
 								<button type="button" class="btn btn-primary instrument" value=24><span>Guitar</span></button>
 								<button type="button" class="btn btn-primary instrument" value=40><span>Violin</span></button>
 								<button type="button" class="btn btn-primary instrument" value=9><span>Glockenspiel</span></button>
-								<button type="button" class="btn btn-primary instrument active" value=112><span>Tinkle Bell</span></button>
+								<button type="button" class="btn btn-primary instrument" value=112><span>Tinkle Bell</span></button>
 								<button type="button" class="btn btn-primary instrument" value=66><span>Tenor Sax</span></button>
 							</div>
+						</div>
 						</div>
 					</div>
 					<div class="row custom-row"></div>
