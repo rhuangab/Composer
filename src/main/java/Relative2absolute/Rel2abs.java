@@ -120,6 +120,16 @@ public class Rel2abs {
 	
 	public static JSONArray getAllOutput(String inputLrc, int beatType, int beats, int tone,int scale) throws IOException
 	{
+		if(inputLrc.split("[.!?,; ]").length < 2){
+			JSONArray ja2 = new JSONArray();
+			JSONArray ja = new JSONArray();
+			JSONObject jo = new JSONObject();
+			jo.put("keys", base_period_second_notes[tone][0]+scale*12);
+			jo.put("duration",""+16);
+			ja.put(jo);
+			ja2.put(ja);
+			return ja2;
+		}
 		if(nextDur == null) initialize();
 		inputLrc = inputLrc.replace("(", "");
 		inputLrc = inputLrc.replace(")", "");
@@ -137,8 +147,8 @@ public class Rel2abs {
 			commas[index] = singlePeriod.split("[,;]");
 			for(int i=0;i<commas[index].length;i++){
 				String singleComma = commas[index][i];
-				curInput += " " + singleComma;
-				curInput.trim();
+				curInput += " " + singleComma.trim();
+				curInput=curInput.trim();
 				if(j == periods.length-1 && i == commas[index].length-1)
 				{
 					System.out.println(curInput + "@@EEnd");
@@ -182,7 +192,7 @@ public class Rel2abs {
 		base_period_second_notes[tone][0] += scale*12;
 		base_period_second_notes[tone][1] += scale*12;
 		base_period_second_notes[tone][2] += scale*12;
-		
+		System.out.println("inputLrc**"+inputLrc);
 		Composer com = new Composer(inputLrc,beatType,beats);
 		ArrayList<Integer>test = new ArrayList<Integer>();
 		test = com.getMelo();
@@ -230,6 +240,7 @@ public class Rel2abs {
 		
 		//System.out.println(test.size() + " "+ com.getDur().size());
 		//EndType myType = EndType.LastPeriod;
+		System.out.println(test.size()+"test");
 		ArrayList<Integer>output = new ArrayList<Integer>();
 		ArrayList<Integer> endNotes = EndNotesGenerator(tone,et,test.get(test.size() - 1));
 		output.add(endNotes.get(1));
