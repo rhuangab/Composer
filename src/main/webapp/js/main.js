@@ -100,16 +100,34 @@ function createVexNote(note_struct)
 		'64':[64,0,1]
 		};
 	var playLength = note_struct.duration;
-	var key = pitchValueToVexKey(note_struct.keys);
-	var newDur = dur[note_struct.duration][2];
-	var hasDot = dur[note_struct.duration][1] == 1?true:false;
-	var singleNote = new Vex.Flow.StaveNote({duration:""+newDur,keys:[key]});
-	singleNote.playLength = playLength;
-	if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
-	if(hasDot) singleNote.addDotToAll();
-	if(note_struct.keys > 70)
-		singleNote.setStemDirection(-1);
-	return singleNote;
+	var key = note_struct.keys;
+	//if(key == -1) key = 60;
+	if(key == -1)
+	{
+		console.log("rrr");
+		var key = pitchValueToVexKey(myViewModel.selectedScale()*12);
+		var hasDot = dur[note_struct.duration][1] == 1?true:false;
+		var newDur = dur[note_struct.duration][2];
+		var singleNote = new Vex.Flow.StaveNote({duration:""+newDur+"r",keys:[key]});
+		console.log(""+newDur+"r");
+		singleNote.playLength = playLength;
+		singleNote.isRestNote = true;
+		if(hasDot) singleNote.addDotToAll();
+		return singleNote;
+	}
+	else{
+		key = pitchValueToVexKey(key);
+		var newDur = dur[note_struct.duration][2];
+		var hasDot = dur[note_struct.duration][1] == 1?true:false;
+		var singleNote = new Vex.Flow.StaveNote({duration:""+newDur,keys:[key]});
+		singleNote.playLength = playLength;
+		if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
+		if(hasDot) singleNote.addDotToAll();
+		if(note_struct.keys > 70)
+			singleNote.setStemDirection(-1);
+		singleNote.isRestNote = false;
+		return singleNote;
+	}
 }
 
 function drawEmptyStaves()
@@ -246,12 +264,16 @@ function drawEmptyStaves()
 		//var keyValue = curNote.keys[0];
 		var noteValue = curNote.keyProps[0].int_value;
 		if(!self.canvas.curPlayInfo.isLastNote()){
-			self.MIDI.noteOn(0,noteValue,HARDNESS,0);
+			if(!curNote.isRestNote){
+				self.MIDI.noteOn(0,noteValue,HARDNESS,0);
+			}
 			self.playerTimer = setTimeout(self.playNextNote,speed);
 		}
 		else
 		{
-			self.MIDI.noteOn(0,noteValue,HARDNESS,0);
+			if(!curNote.isRestNote){
+				self.MIDI.noteOn(0,noteValue,HARDNESS,0);
+			}
 			self.canvas.colorNextNote();
 			//self.canvas.curPlayInfo.setDefaultValue();
 			setTimeout(function(){$(".player[value='stop']").click()},speed);

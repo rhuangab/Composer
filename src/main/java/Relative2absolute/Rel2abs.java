@@ -78,7 +78,7 @@ public class Rel2abs {
 	 * @throws IOException 
 	 * @throws InvalidMidiDataException 
 	 */
-	public static void main(String[] args) throws IOException, InvalidMidiDataException {
+	/*public static void main(String[] args) throws IOException, InvalidMidiDataException {
 		String input  = "I'm a hot air balloon that could go to space With the air, like I don't care baby by the way";
 	    //String input = "This is ! ? good.";
 		//input = "Close your eyes and roll a dice Under the board there's a compromise If after all we only lived twice Which lies the run road to paradise Don't say a word, here comes the break of the day And wide clouds of sand raised by the wind of the end of May Close your eyes and make a betFace to the glare of the sunset";
@@ -100,8 +100,8 @@ public class Rel2abs {
 //			myMelody.add(output.get(j));
 //			System.out.println(output.get(j));
 //		}
-		getJsonOutput(input, 4, 2,0,0);
-	}
+		//getJsonOutput(input, 4, 2,0,0);
+	}*/
 	
 	public static int findClosest(int key,int max){
 		if(nextDur == null) initialize();
@@ -118,17 +118,71 @@ public class Rel2abs {
 		else return key;
 	}
 	
-	public static JSONArray getJsonOutput(String inputLrc, int beatType, int beats, int tone,int scale) throws IOException
+	public static JSONArray getAllOutput(String inputLrc, int beatType, int beats, int tone,int scale) throws IOException
 	{
 		if(nextDur == null) initialize();
-//		inputLrc = inputLrc.replace("", "'");
-//		inputLrc = inputLrc.replace("", "?");
-//		inputLrc = inputLrc.replace("", "!");
-//		inputLrc = inputLrc.replace("", ",");
-//		inputLrc = inputLrc.replace("", ".");
+		inputLrc = inputLrc.replace("(", "");
+		inputLrc = inputLrc.replace(")", "");
+		inputLrc = inputLrc.replace("<", "");
+		inputLrc = inputLrc.replace(">", "");
+		inputLrc = inputLrc.replace("{", "");
+		inputLrc = inputLrc.replace("}", "");
+		String[] periods = inputLrc.split("[.!?]");
+		String[][] commas = new String[periods.length][];
+		int index = 0;
+		JSONArray jo = new JSONArray();
+		String curInput = "";
+		for(int j=0;j<periods.length;j++){
+			String singlePeriod = periods[j].trim();
+			commas[index] = singlePeriod.split("[,;]");
+			for(int i=0;i<commas[index].length;i++){
+				String singleComma = commas[index][i];
+				curInput += " " + singleComma;
+				curInput.trim();
+				if(j == periods.length-1 && i == commas[index].length-1)
+				{
+					System.out.println(curInput + "@@EEnd");
+					JSONArray tempJsonArr = getJsonOutput(curInput, beatType,beats,tone,scale,EndType.LastPeriod);
+					for(int m=0;m<tempJsonArr.length();m++){
+						jo.put(tempJsonArr.get(m));
+					}
+					curInput = "";
+					System.out.println(tempJsonArr.toString());
+				}
+				else if(i == commas[index].length-1){
+					if(curInput.split(" ").length >= 2){
+						System.out.println(curInput + "@@PPer");
+						JSONArray tempJsonArr = getJsonOutput(curInput, beatType,beats,tone,scale,EndType.Period);
+						for(int m=0;m<tempJsonArr.length();m++){
+							jo.put(tempJsonArr.get(m));
+						}
+						curInput = "";
+						System.out.println(tempJsonArr.toString());
+					}
+				}
+				else{
+					if(curInput.split(" ").length >= 2){
+						System.out.println(curInput + "@@CCom");
+						JSONArray tempJsonArr = getJsonOutput(curInput, beatType,beats,tone,scale,EndType.Comma);
+						for(int m=0;m<tempJsonArr.length();m++){
+							jo.put(tempJsonArr.get(m));
+						}
+						curInput = "";
+						System.out.println(tempJsonArr.toString());
+					}
+				}
+			}
+			index++;
+		}
+		return jo;
+	}
+	
+	public static JSONArray getJsonOutput(String inputLrc, int beatType, int beats, int tone,int scale,EndType et) throws IOException
+	{
 		base_period_second_notes[tone][0] += scale*12;
 		base_period_second_notes[tone][1] += scale*12;
 		base_period_second_notes[tone][2] += scale*12;
+		
 		Composer com = new Composer(inputLrc,beatType,beats);
 		ArrayList<Integer>test = new ArrayList<Integer>();
 		test = com.getMelo();
@@ -175,9 +229,9 @@ public class Rel2abs {
 		//System.out.println(maxDur + " " + minDur);
 		
 		//System.out.println(test.size() + " "+ com.getDur().size());
-		EndType myType = EndType.LastPeriod;
+		//EndType myType = EndType.LastPeriod;
 		ArrayList<Integer>output = new ArrayList<Integer>();
-		ArrayList<Integer> endNotes = EndNotesGenerator(tone,myType,test.get(test.size() - 1));
+		ArrayList<Integer> endNotes = EndNotesGenerator(tone,et,test.get(test.size() - 1));
 		output.add(endNotes.get(1));
 		output.add(endNotes.get(0));
 		
@@ -198,6 +252,7 @@ public class Rel2abs {
 		for(int i=0;i<newDur.size();i++){
 			//ArrayList<Integer> measure = new ArrayList<Integer>();
 			JSONArray measureArray = new JSONArray();
+			int curSum  = 0;
 			for(int j=0;j<newDur.get(i).size();j++)
 			{
 				JSONObject jo = new JSONObject();
@@ -206,6 +261,17 @@ public class Rel2abs {
 				while(key < base_period_second_notes[tone][0]-12) key += 12;
 				jo.put("keys", key);
 				jo.put("duration",""+newDur.get(i).get(j));
+				measureArray.put(jo);
+				curSum +=newDur.get(i).get(j);
+			}
+			if(curSum < sumInEveryMeasure)
+			{
+				System.out.println("$$$$$");
+				int remain = sumInEveryMeasure - curSum;
+				remain = findClosest(remain, sumInEveryMeasure);
+				JSONObject jo = new JSONObject();
+				jo.put("keys", -1);
+				jo.put("duration",""+remain);
 				measureArray.put(jo);
 			}
 			noteArray.put(measureArray);
@@ -290,7 +356,7 @@ public class Rel2abs {
 				cur = new ArrayList<Integer>();
 				cur.add(next);
 			}
-			if(i == dur.size()-1) {
+			if(i == dur.size()-1 && cur != null) {
 				result.add(cur);
 				cur = null;
 			}
@@ -303,6 +369,7 @@ public class Rel2abs {
 				a += " " + result.get(i).get(j);
 				count++;
 			}
+			System.out.println(count + ": durNUm ");
 		}
 		return result;
 	}
@@ -363,7 +430,7 @@ public class Rel2abs {
 					}
 				}
 			}
-		
+			System.out.println("eee");
 			break;
 			
 		case Period:
@@ -390,19 +457,21 @@ public class Rel2abs {
 					}
 				}
 			}
-			
+			System.out.println("ppp");
 			break;
 			
 		case Comma:
 			// generate random number comma_temp except 2 with equal probability
-			int comma_temp = (int)(Math.random() * 7); 
+			/*int comma_temp = (int)(Math.random() * 7); 
 			if (comma_temp == 2){
 				int prob = (int)(Math.random() * 6); 
 				if (prob <= 1)
 					comma_temp =  (int)(Math.random() * 2); 
 				else
 					comma_temp =  (int)(Math.random() * 4) + 3; 
-			}
+			}*/
+			System.out.println("comma");
+			int comma_temp = (int)(Math.random()*2) + 1;
 				
 			endingNotes.set(1, new Integer(base_period_second_notes[my_tone][comma_temp]));// The last note can not be "mi"
 			int comma_previousNotePitch = base_period_second_notes[my_tone][comma_temp] + diff; 

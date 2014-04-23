@@ -117,15 +117,16 @@ public class Composer {
 			if(lrc.get(i+1) == 99) 
 				lrc.set(i+1, lrc.get(i));
 			lrc.set(i, lrc.get(i+1)-lrc.get(i));
+			System.out.println("lrc:"+lrc.get(i));
 		}
 		lrc.remove(lrc.size()-1);
-		
 		//add beat information
 		int position = 0;
 		for(int i = 0; i < lrc.size(); ++i) {
 			lrc.set(i, lrc.get(i) + beatArray.get(position));
 			//System.out.println("add " + beatArray.get(position));
 			position = (position+1) % beatArray.size();
+			System.out.println("lrc2:"+lrc.get(i));
 		}
 		
 		
@@ -310,7 +311,6 @@ public class Composer {
 				//System.out.println("no: " + current);
 				result.add(new Integer(99));
 			}
-				
 			else {
 				String stress = ws.stress;
 				for(int i = 0;i < stress.length();++i) {
