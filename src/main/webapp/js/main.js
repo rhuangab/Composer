@@ -2,11 +2,11 @@ var ROOT = "/theComposerServlet";
 var CHORDNUM = 4;
 var NOTENUM = 4;
 var STAVEWIDTHUNIT = 40;
-var STAVEWIDTH = 160;
+var STAVEWIDTH = 200;
 var STAVEHEIGHT = 150;
 var STAVEPADDING = 20;
-var SPEEDUNIT = 0.200;
-var SPEEDBASE = SPEEDUNIT;
+var SPEEDUNIT = 0.100;
+var SPEEDBASE = 0.500;
 var HARDNESS = 100;
 var preDefNotes = [[[]]];
 /*var preDefNotes = [[
@@ -99,10 +99,12 @@ function createVexNote(note_struct)
 		'48':[32,1,2],
 		'64':[64,0,1]
 		};
+	var playLength = note_struct.duration;
 	var key = pitchValueToVexKey(note_struct.keys);
 	var newDur = dur[note_struct.duration][2];
 	var hasDot = dur[note_struct.duration][1] == 1?true:false;
 	var singleNote = new Vex.Flow.StaveNote({duration:""+newDur,keys:[key]});
+	singleNote.playLength = playLength;
 	if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
 	if(hasDot) singleNote.addDotToAll();
 	if(note_struct.keys > 70)
@@ -149,8 +151,8 @@ function drawEmptyStaves()
 	self.selectedBeats = 4;
 	self.selectedBeatType = 4;
 	self.selectedMajor = 0;
-	self.selectedScale = ko.observable(4);
-	self.playSpeed = ko.observable(1);
+	self.selectedScale = ko.observable(5);
+	self.playSpeed = ko.observable(0);
 	$(".player").click(function(event){
 		targetButton = $(event.target).closest('.player');
 		targetButton.siblings().removeClass('active');
@@ -176,8 +178,8 @@ function drawEmptyStaves()
 		targetButton.siblings().removeClass('active');
 		targetButton.focus();
 		MIDI.programChange(0, targetButton.attr('value'));
-		if(targetButton.attr('value') == 40 ||targetButton.attr('value')==66) SPEEDBASE = 0.5;
-		else SPEEDBASE = 0.25;
+		/*if(targetButton.attr('value') == 40 ||targetButton.attr('value')==66) SPEEDBASE = ;
+		else SPEEDBASE = 0.25;*/
 	});
 	$(".scale").click(function(event){
 		targetButton = $(event.target).closest('.scale');
@@ -193,11 +195,19 @@ function drawEmptyStaves()
 		targetButton.siblings().removeClass('active');
 		//targetButton.focus();
 		var temp = self.playSpeed();
-		var temp = temp + parseInt(targetButton.attr('value'));
-		if(temp < 0) self.playSpeed(1);
+		var add = parseInt(targetButton.attr('value'));
+		console.log(add);
+		var temp = temp + add;
+		if(temp < -5) self.playSpeed(-5);
 		else if(temp > 5) self.playSpeed(5);
 		else self.playSpeed(temp);
-		SPEEDBASE = SPEEDUNIT / self.playSpeed();
+		if(add > 0){
+			console.log("aaa");
+			SPEEDBASE -= SPEEDUNIT;
+		}
+		else{
+			SPEEDBASE += SPEEDUNIT;
+		}
 	});
 	MIDI.loadPlugin({
 			soundfontUrl: "./soundfont/",
@@ -232,7 +242,7 @@ function drawEmptyStaves()
 	self.playNextNote = function(){
 		self.canvas.colorNextNote();
 		var curNote = self.canvas.curPlayInfo.curPlayNotes();
-		var speed = SPEEDBASE * (4 / curNote.duration)*1000;
+		var speed = SPEEDBASE * curNote.playLength/32 * 1000;
 		//var keyValue = curNote.keys[0];
 		var noteValue = curNote.keyProps[0].int_value;
 		if(!self.canvas.curPlayInfo.isLastNote()){
@@ -546,7 +556,7 @@ $(document).ready(function($) {
 						result = JSON.parse(result);
 				} catch(err) {console.log("Parse Failed");}*/
 				jsonResult = result;
-				preDefNotes = [[[]]];
+				preDefNotes = [];
 				var staveIndex = 0;
 				var chordIndex = 0;
 				var total = 32;

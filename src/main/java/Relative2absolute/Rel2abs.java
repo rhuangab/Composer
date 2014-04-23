@@ -140,8 +140,8 @@ public class Rel2abs {
 		int cur = base;
 		int maxDur = 0;
 		int minDur = 1000;
-		int last = 0;
-		int times = 0;
+		int bigTimes = 0;
+		int smallTimes = 0;
 		for(int i=com.getDur().size()-1;i>= 0;--i)
 		{
 			int next = com.getDur().get(i);
@@ -152,14 +152,15 @@ public class Rel2abs {
 			else{
 				cur *= -next;
 			}
-			if(cur == last) times++;
-			if(times > 1 && cur >= 32){
-				cur = 16;
-				times = 0;
+			if(cur >= 32) bigTimes++;
+			else if(cur <= 6) smallTimes++;
+			if(bigTimes > 2){
+				cur = 12;
+				bigTimes = 0;
 			}
-			else if(times > 3 && cur <=4){
-				cur = 4;
-				times = 0;
+			else if(smallTimes > 2){
+				cur = 12;
+				smallTimes = 0;
 			}
 			cur = findClosest(cur,sumInEveryMeasure);
 			dur.add(cur);
@@ -201,7 +202,6 @@ public class Rel2abs {
 			{
 				JSONObject jo = new JSONObject();
 				int key = output.get(k--);
-				System.out.println(k + " "+ key);
 				while(key > base_period_second_notes[tone][0]+12) key -= 12;
 				while(key < base_period_second_notes[tone][0]-12) key += 12;
 				jo.put("keys", key);
