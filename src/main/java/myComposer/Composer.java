@@ -43,6 +43,7 @@ public class Composer {
 	public String jasonResult;
 	private static HashMap<String, Integer> beatsMap;
 	private ArrayList<Integer> lrc;
+	private ArrayList<String> lrcText;
 	private ArrayList<Integer> melo;
 	private ArrayList<Integer> dur;
 	private ArrayList<Integer> beatArray;
@@ -117,7 +118,7 @@ public class Composer {
 			if(lrc.get(i+1) == 99) 
 				lrc.set(i+1, lrc.get(i));
 			lrc.set(i, lrc.get(i+1)-lrc.get(i));
-			System.out.println("lrc:"+lrc.get(i));
+			//System.out.println("lrc:"+lrc.get(i));
 		}
 		lrc.remove(lrc.size()-1);
 		//add beat information
@@ -126,13 +127,14 @@ public class Composer {
 			lrc.set(i, lrc.get(i) + beatArray.get(position));
 			//System.out.println("add " + beatArray.get(position));
 			position = (position+1) % beatArray.size();
-			System.out.println("lrc2:"+lrc.get(i));
 		}
 		
 		
 		//System.out.println(lrc);
 		
 		//generate melo array
+		int findDurLen = 0;
+		int notfindDurLen = 0;
 		int successLen = 0;
 		int startPos = 0;
 		while(startPos < lrc.size() - MIN) {
@@ -151,6 +153,7 @@ public class Composer {
 				while(iter.hasNext()) {
 					SequencePair key = (SequencePair) iter.next();
 					if(ArrayContentCompare(current, key.firstSeq)) {
+						System.out.println("!!find for " + startPos + " to "+(startPos+i));
 						find = true;
 						searchResult = key.secondSeq;
 						successLen+=i;
@@ -164,15 +167,13 @@ public class Composer {
 				if(!find) {
 					//System.out.println("can not find for size "+ i);
 				}
-					
 			}
 			//cannot find for at least length two
 			if(!find) {
-				//System.out.println("cannnot find for any size");
+				System.out.println("cannnot find for any size for " + startPos);
 				startPos++;
 				melo.add(new Integer(0));
 			}
-			
 		}
 		
 		//deal with the end 
@@ -210,7 +211,9 @@ public class Composer {
 				while(iter.hasNext()) {
 					SequencePair key = (SequencePair) iter.next();
 					if(ArrayContentCompare(current, key.firstSeq)) {
+						System.out.println("**Durfind for " + startPos + " to "+(startPos+i));
 						find = true;
+						findDurLen += i;
 						searchResult = key.secondSeq;
 						successLen+=i;
 						startPos+=i;
@@ -227,13 +230,14 @@ public class Composer {
 			}
 			//cannot find for at least length two
 			if(!find) {
-				//System.out.println("cannnot find for any size");
+				System.out.println("DDDDur cannot find for "+ startPos);
 				startPos++;
+				notfindDurLen++;
 				dur.add(a[index%3]);
 			}
 			
 		}
-		
+		System.out.println("Find:"+findDurLen+",notFind:"+notfindDurLen);
 		//deal with the end 
 		while(startPos< lrc.size() && startPos!= lrc.size()) {
 			dur.add(new Integer(1));
@@ -278,9 +282,28 @@ public class Composer {
 	}
 
 
+	public void pushLrcText(String current, int part)
+	{
+		if(part == 1) lrcText.add(current);
+		else if(part >=2 && current.length() >=part)
+		{
+			int length = current.length();
+			int subLen = length / part;
+			for(int i=0;i<part-1;i++){
+				lrcText.add(current.substring(subLen*i,subLen*(i+1)));
+			}
+			lrcText.add(current.substring(subLen*(part-1)));
+		}
+		else{
+			for(int i=0;i<part;i++){
+				lrcText.add(current);
+			}
+		}
+	}
+	
 	private ArrayList<Integer> parseLrc() throws IOException {
 		ArrayList<Integer> result = new ArrayList<Integer>();
-		
+		lrcText = new ArrayList<String>();
 		str = str.replace("[^a-zA-Z]", "");
 		str = str.replace("?", "");
 		str = str.replace("!", "");
@@ -309,19 +332,39 @@ public class Composer {
 			WordStruct ws = (WordStruct) hashtable.get(current.toUpperCase());
 			if(ws==null) {
 				//System.out.println("no: " + current);
-				result.add(new Integer(99));
+				if(current.length() <=5){
+					result.add(new Integer(99));
+					pushLrcText(current, 1);
+				}
+				else if(current.length() > 5 && current.length() < 9)
+				{
+					result.add(0);
+					result.add(3);
+					pushLrcText(current, 2);
+				}
+				else
+				{
+					result.add(0);
+					result.add(6);
+					result.add(3);
+					pushLrcText(current, 3);
+				}
 			}
 			else {
 				String stress = ws.stress;
 				for(int i = 0;i < stress.length();++i) {
-					result.add(Integer.parseInt(stress.substring(i, i+1)));
+					result.add(Integer.parseInt(stress.substring(i, i+1))*3);
 				}
+				pushLrcText(current, stress.length());
 			}
 		}
-		
-		
 		return result;
 		
+	}
+	
+	public String getLrcText(int index)
+	{
+		return lrcText.get(index);
 	}
 //	static void getJason() {
 //		  
@@ -502,7 +545,7 @@ public class Composer {
 				allPatternTwo.get(size).add(new SequencePair(lrc,melo));
 			}
 		}	
-		if(s!=null) 
+		if(s!=null)
 			s.close();
 	}
 	

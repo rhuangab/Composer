@@ -9,66 +9,20 @@ var SPEEDUNIT = 0.100;
 var SPEEDBASE = 0.500;
 var HARDNESS = 100;
 var preDefNotes = [[[]]];
-/*var preDefNotes = [[
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["D/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-			],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-		],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "2" }),
-      new Vex.Flow.StaveNote({ keys: ["e/4"], duration: "4" })
-		],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["e/4"], duration: "4" })
-			]],
-		[[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["e/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-			],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-		],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "2" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-		],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-			]],
-		[[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["e/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-			],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-		],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "2" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-		],
-		[new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "4" }),
-      new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "4" })
-			]]
-			];
-*/
+
+function setLoad(message)
+{
+	var mask = $('<div class="spinner-back" id="loadingMask"><div class="spinner-content"><div class="spinner"><div class="dot1"></div><div class="dot2"></div></div><div class="spinner-message"><span>'+message+'</span></div></div></div>');
+	mask.prependTo('body');
+	mask.fadeIn(200);
+}
+
+function deleteLoad()
+{
+	$('#loadingMask').fadeOut(1000);
+	setTimeout(function(){$('#loadingMask').remove();},1000);
+}
+
 
 function pitchValueToVexKey(pitchValue){
 	var key = MIDI.noteToKey[pitchValue];
@@ -84,6 +38,19 @@ function vexKeyToPitchValue(key)
 	var pitchValue = MIDI.keyToNote['A0'];
 }
 
+function copyVexNote(oldNote,newPitchValue)
+{
+	var duration = oldNote.duration;
+	var hasDot = oldNote.hasDot;
+	
+}
+
+function newAnnotation(text) {
+	return (
+					new Vex.Flow.Annotation(text)).
+	setFont("Times", 10).
+	setVerticalJustification(Vex.Flow.Annotation.VerticalJustify.BOTTOM);
+}
 
 function createVexNote(note_struct)
 {
@@ -104,14 +71,14 @@ function createVexNote(note_struct)
 	//if(key == -1) key = 60;
 	if(key == -1)
 	{
-		console.log("rrr");
 		var key = pitchValueToVexKey(myViewModel.selectedScale()*12);
 		var hasDot = dur[note_struct.duration][1] == 1?true:false;
 		var newDur = dur[note_struct.duration][2];
 		var singleNote = new Vex.Flow.StaveNote({duration:""+newDur+"r",keys:[key]});
-		console.log(""+newDur+"r");
+		//console.log(""+newDur+"r");
 		singleNote.playLength = playLength;
 		singleNote.isRestNote = true;
+		singleNote.hasDot = hasDot;
 		if(hasDot) singleNote.addDotToAll();
 		return singleNote;
 	}
@@ -122,10 +89,15 @@ function createVexNote(note_struct)
 		var singleNote = new Vex.Flow.StaveNote({duration:""+newDur,keys:[key]});
 		singleNote.playLength = playLength;
 		if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
+		singleNote.hasDot = hasDot;
 		if(hasDot) singleNote.addDotToAll();
 		if(note_struct.keys > 70)
 			singleNote.setStemDirection(-1);
 		singleNote.isRestNote = false;
+		if(note_struct.lrcText){
+			console.log(note_struct.lrcText);
+			singleNote.addAnnotation(0, newAnnotation(note_struct.lrcText));
+		}
 		return singleNote;
 	}
 }
@@ -214,13 +186,11 @@ function drawEmptyStaves()
 		//targetButton.focus();
 		var temp = self.playSpeed();
 		var add = parseInt(targetButton.attr('value'));
-		console.log(add);
 		var temp = temp + add;
 		if(temp < -5) self.playSpeed(-5);
 		else if(temp > 5) self.playSpeed(5);
 		else self.playSpeed(temp);
 		if(add > 0){
-			console.log("aaa");
 			SPEEDBASE -= SPEEDUNIT;
 		}
 		else{
@@ -232,6 +202,8 @@ function drawEmptyStaves()
 			instruments: ["acoustic_grand_piano","glockenspiel","acoustic_guitar_nylon","violin","tenor_sax","tinkle_bell"],
 			//instrument: "acoustic_guitar_nylon",
 			callback: function() {
+				//$("#loadingMask").fadeOut(1000);
+				deleteLoad();
 				/*self.playerNote = function(note){
 					var delay = 0; // play one note every quarter second
 					var note = noteArray[1]+12*(self.octave()-1); // the MIDI note
@@ -334,8 +306,25 @@ ViewModel.Canvas = function()
     staveBar.setContext(self.ctx).draw();
 
     var notesBar = notes;
-
+		var consecutiveSmallNotes = 0;
+		var beams = [];
+		for(var i=0;i<notes.length;i++)
+		{
+ 			if(notes[i].playLength < 16){
+				consecutiveSmallNotes++;
+			}
+			else{
+				if(consecutiveSmallNotes >= 2){
+					console.log(notes.slice(i-consecutiveSmallNotes,i));
+ 					beams.push(new Vex.Flow.Beam(notes.slice(i-consecutiveSmallNotes,i)));
+ 				}
+				consecutiveSmallNotes = 0;
+			}
+ 		}
     Vex.Flow.Formatter.FormatAndDraw(self.ctx, staveBar, notesBar);
+		for(var i=0;i<beams.length;i++){
+			beams[i].setContext(self.ctx).draw();
+		}
 		self.staves.push(staveBar);
   };
 	
@@ -381,8 +370,10 @@ ViewModel.Canvas = function()
 			if(pitchValue == 21) return;
 			pitchValue -= 1;//cmajord[pitchValue%12];
 		}
-		var oldDuration = self.notes[i][j][self.curIndex()].duration;
-		var singleNote = createVexNote({duration:oldDuration,keys:pitchValue});
+		if(self.currentSelected().isRestNote) pitchValue = -1;
+		var playLength = self.notes[i][j][self.curIndex()].playLength;
+		var singleNote = createVexNote({ keys: pitchValue, duration: playLength });
+		//var singleNote = copyVexNote(self.currentSelected(),pitchValue);
 		//var singleNote = new Vex.Flow.StaveNote({ keys: [newKey], duration: oldDuration });
 		self.notes[i][j][self.curIndex()] = singleNote;
 		self.currentSelected(null);
@@ -391,8 +382,6 @@ ViewModel.Canvas = function()
 		var y = self.staveHeight*i;
 		var clearWidth = width;
 		var clearX = x + self.padding+1;
-		console.log(clearX);
-		console.log(clearWidth);
 //		self.canvas.getContext('2d').clearRect(clearX,y,clearWidth-1,self.staveHeight);
 		self.redraw();
 //		self.setContextColor('black');
@@ -532,29 +521,7 @@ ViewModel.Canvas = function()
 
 
 $(document).ready(function($) {
-	ko.bindingHandlers.bsChecked = {/*
-    init: function (element, valueAccessor, allBindingsAccessor,
-    viewModel, bindingContext) {
-				console.log(element);
-        var value = valueAccessor();
-        var newValueAccessor = function () {
-            return {
-                change: function () {
-                    value(element.value);
-                }
-            }
-        };
-        ko.bindingHandlers.event.init(element, newValueAccessor,
-        allBindingsAccessor, viewModel, bindingContext);
-    },
-    update: function (element, valueAccessor, allBindingsAccessor,viewModel, bindingContext) {
-				console.log(ko.utils.unwrapObservable(valueAccessor()));
-        if ($(element).val() == ko.unwrap(valueAccessor())) {
-            $(element).closest('.btn').button('toggle');
-        }
-    }*/
-	};
-	
+	setLoad('Loading MIDI sound');
 	myViewModel = new ViewModel();
 	ko.applyBindings(myViewModel);
 	drawEmptyStaves();
@@ -564,6 +531,7 @@ $(document).ready(function($) {
 	$('<input>').attr({type: 'hidden',name:'beatType',value:myViewModel.selectedBeatType}).appendTo('form');
 	$('<input>').attr({type: 'hidden',name:'scale',value:myViewModel.selectedScale()}).appendTo('form');
 	$("#create_button").click(function(){
+		setLoad('Generateing ...');
 		$('input[name=major]').attr('value',myViewModel.selectedMajor);
 		$('input[name=beats]').attr('value',myViewModel.selectedBeats);
 		$('input[name=beatType]').attr('value',myViewModel.selectedBeatType);
@@ -573,6 +541,7 @@ $(document).ready(function($) {
 			type: 'POST',
 			data: $('form').serialize(),
 			contentType:'application/x-www-form-urlencoded; charset=UTF-8',
+			complete: deleteLoad,
 			success: function(result){
 				/*try{
 						result = JSON.parse(result);
@@ -585,7 +554,7 @@ $(document).ready(function($) {
 				var cur = 0;
 				//result = {"notes":[{"duration":"4","keys":83},{"duration":"4","keys":83},{"duration":"4","keys":80},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":78},{"duration":"4","keys":76},{"duration":"4","keys":74},{"duration":"4","keys":76},{"duration":"4","keys":76},{"duration":"4","keys":73},{"duration":"4","keys":71},{"duration":"4","keys":71},{"duration":"4","keys":69},{"duration":"4","keys":68},{"duration":"4","keys":66},{"duration":"4","keys":68},{"duration":"4","keys":68},{"duration":"4","keys":69}]}
 				for(var i=0; i<result.notes.length;i++){
-					console.log(parseInt(i/CHORDNUM)+" "+i%CHORDNUM);
+					//console.log(parseInt(i/CHORDNUM)+" "+i%CHORDNUM);
 					if(i%CHORDNUM==0){
 						preDefNotes.push([[]]);
 					}
@@ -621,5 +590,7 @@ $(document).ready(function($) {
 			}
 		});
 	});
+	//$("input[name=lrc]").val("I'm at a payphone, trying to call home. All of my change I spent on you. Where have the times gone");
+	//$("#create_button").click();
 		
 });

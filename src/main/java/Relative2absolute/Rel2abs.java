@@ -49,6 +49,26 @@ public class Rel2abs {
 		{8,10,11,1,3,5,6},//bG-Major
 		};
 	
+	public static int[][][] freDurPattern = {
+		/*{{64},{16,-48},{32,-32}},
+		{{32,32},{16,48},{16,16,-32},{8,8,-48}},
+		{{8,8,48},{16,32,16},{8,32,24}},
+		{{16,16,16,16},{8,8,32,16}},
+		{{16,8,8,16,16}},
+		{{16,16,8,8,8,8},{8,8,8,8,16,16}}*/
+		{{64}},
+		{{32,32},{16,48}},
+		{{8,8,48},{16,32,16},{8,32,24}},
+		{{16,16,16,16},{8,8,32,16}},
+		{{16,8,8,16,16}},
+		{{16,16,8,8,8,8},{8,8,8,8,16,16}}
+	};
+	
+	public static int[][][] freDurPatternForRest = {
+		{{16},{32}},
+		{{16,16},{8,8}}
+	};
+	
 	public static int [][] base_period_second_notes = {
 		{60,64,67}, {67,71,74}, {62,66,69}, {69,73,76}, {64,68,71}, {71,75,78},
 		{65,69,72}, {70,74,77}, {63,67,71}, {68,72,75}, {61,65,68}, {66,70,73}
@@ -126,6 +146,7 @@ public class Rel2abs {
 			JSONObject jo = new JSONObject();
 			jo.put("keys", base_period_second_notes[tone][0]+scale*12);
 			jo.put("duration",""+16);
+			jo.put("lrcText", inputLrc);
 			ja.put(jo);
 			ja2.put(ja);
 			return ja2;
@@ -151,7 +172,7 @@ public class Rel2abs {
 				curInput=curInput.trim();
 				if(j == periods.length-1 && i == commas[index].length-1)
 				{
-					System.out.println(curInput + "@@EEnd");
+					//System.out.println(curInput + "@@EEnd");
 					JSONArray tempJsonArr = getJsonOutput(curInput, beatType,beats,tone,scale,EndType.LastPeriod);
 					for(int m=0;m<tempJsonArr.length();m++){
 						jo.put(tempJsonArr.get(m));
@@ -161,7 +182,7 @@ public class Rel2abs {
 				}
 				else if(i == commas[index].length-1){
 					if(curInput.split(" ").length >= 2){
-						System.out.println(curInput + "@@PPer");
+						//System.out.println(curInput + "@@PPer");
 						JSONArray tempJsonArr = getJsonOutput(curInput, beatType,beats,tone,scale,EndType.Period);
 						for(int m=0;m<tempJsonArr.length();m++){
 							jo.put(tempJsonArr.get(m));
@@ -172,7 +193,7 @@ public class Rel2abs {
 				}
 				else{
 					if(curInput.split(" ").length >= 2){
-						System.out.println(curInput + "@@CCom");
+						//System.out.println(curInput + "@@CCom");
 						JSONArray tempJsonArr = getJsonOutput(curInput, beatType,beats,tone,scale,EndType.Comma);
 						for(int m=0;m<tempJsonArr.length();m++){
 							jo.put(tempJsonArr.get(m));
@@ -240,7 +261,6 @@ public class Rel2abs {
 		
 		//System.out.println(test.size() + " "+ com.getDur().size());
 		//EndType myType = EndType.LastPeriod;
-		System.out.println(test.size()+"test");
 		ArrayList<Integer>output = new ArrayList<Integer>();
 		ArrayList<Integer> endNotes = EndNotesGenerator(tone,et,test.get(test.size() - 1));
 		output.add(endNotes.get(1));
@@ -259,6 +279,7 @@ public class Rel2abs {
 //		}
 		JSONArray noteArray = new JSONArray();
 		int k = output.size()-1;
+		int lrcTextIndex = 0;
 		//System.out.println(temp.size() + " "+output.size() + " "+output.get(0));
 		for(int i=0;i<newDur.size();i++){
 			//ArrayList<Integer> measure = new ArrayList<Integer>();
@@ -268,21 +289,22 @@ public class Rel2abs {
 			{
 				JSONObject jo = new JSONObject();
 				int key = output.get(k--);
-				while(key > base_period_second_notes[tone][0]+12) key -= 12;
-				while(key < base_period_second_notes[tone][0]-12) key += 12;
+				while(key > base_period_second_notes[tone][0]+24) key -= 12;
+				while(key < base_period_second_notes[tone][0]-24) key += 12;
 				jo.put("keys", key);
 				jo.put("duration",""+newDur.get(i).get(j));
+				jo.put("lrcText", com.getLrcText(lrcTextIndex++));
 				measureArray.put(jo);
 				curSum +=newDur.get(i).get(j);
 			}
 			if(curSum < sumInEveryMeasure)
 			{
-				System.out.println("$$$$$");
 				int remain = sumInEveryMeasure - curSum;
 				remain = findClosest(remain, sumInEveryMeasure);
 				JSONObject jo = new JSONObject();
 				jo.put("keys", -1);
 				jo.put("duration",""+remain);
+				jo.put("lrcText","");
 				measureArray.put(jo);
 			}
 			noteArray.put(measureArray);
@@ -324,6 +346,29 @@ public class Rel2abs {
 	public static ArrayList<ArrayList<Integer> > adjustDur(ArrayList<Integer> dur, int sum)
 	{
 		ArrayList<ArrayList<Integer> > result = new ArrayList<ArrayList<Integer> >();
+		if(true){
+			int length = dur.size();
+			int curRemain = length;
+			while(length > 2)
+			{
+				int nextLen = (int) (Math.random()*(Math.min(length,5)))+2;
+				int durSeq[] = freDurPattern[nextLen-1][(int) (Math.random()*freDurPattern[nextLen-1].length)];
+				//for()
+				ArrayList<Integer> measure  = new ArrayList<Integer>();
+				for(int a : durSeq){ measure.add(a);}
+				result.add(measure);
+				length -= nextLen;
+			}
+			if(length >= 1 && length <= 2)
+			{
+				int durSeq[] = freDurPatternForRest[length-1][(int) (Math.random()*freDurPatternForRest[length-1].length)];
+				ArrayList<Integer> measure  = new ArrayList<Integer>();
+				for(int a : durSeq){ measure.add(a);}
+				result.add(measure);
+			}
+			return result;
+		}
+		
 		ArrayList<Integer> cur = null;
 		int curSum = 0; 
 		for(int i=0;i<dur.size();i++)
@@ -380,7 +425,7 @@ public class Rel2abs {
 				a += " " + result.get(i).get(j);
 				count++;
 			}
-			System.out.println(count + ": durNUm ");
+			//System.out.println(count + ": durNUm ");
 		}
 		return result;
 	}
@@ -441,7 +486,7 @@ public class Rel2abs {
 					}
 				}
 			}
-			System.out.println("eee");
+			//System.out.println("eee");
 			break;
 			
 		case Period:
@@ -468,7 +513,7 @@ public class Rel2abs {
 					}
 				}
 			}
-			System.out.println("ppp");
+			//System.out.println("ppp");
 			break;
 			
 		case Comma:
@@ -481,7 +526,7 @@ public class Rel2abs {
 				else
 					comma_temp =  (int)(Math.random() * 4) + 3; 
 			}*/
-			System.out.println("comma");
+			//System.out.println("comma");
 			int comma_temp = (int)(Math.random()*2) + 1;
 				
 			endingNotes.set(1, new Integer(base_period_second_notes[my_tone][comma_temp]));// The last note can not be "mi"
