@@ -43,6 +43,7 @@ public class Composer {
 	public String jasonResult;
 	private static HashMap<String, Integer> beatsMap;
 	private ArrayList<Integer> lrc;
+	private ArrayList<Integer> lrc2;
 	private ArrayList<String> lrcText;
 	private ArrayList<Integer> melo;
 	private ArrayList<Integer> dur;
@@ -52,11 +53,23 @@ public class Composer {
 	static int MIN = 2;
 	static int MAX = 10;
 	
+	public static void out(int o)
+	{
+		System.out.println(o);
+	}
 
 	public static void main(String[] args) throws IOException, InvalidMidiDataException {
 		
 		String input  = "In this Map example, we will learn how to check if HashMap is empty in Java. There are two ways to find out if Map is empty, one is using size() method, if size is zero means Map is empty. Another way to check if HashMap is empty is using more readable isEmpty() method which returns true if Map is empty. Here is code example:";
-		Composer com = new Composer(input,4,4);
+		//Composer com = new Composer(input,4,4);
+		if(allPatternOne == null){
+			allPatternOne = new HashMap<Integer, HashSet<SequencePair> >();
+			for(int i = MIN; i <=MAX; ++i) {
+				allPatternOne.put(new Integer(i), new HashSet<SequencePair>());
+			}
+			readInPatterns(FilePath.allPatternOne,true);
+		}
+		out(allPatternOne.get(3).size());
 	}
 
 
@@ -106,12 +119,12 @@ public class Composer {
 		}
 		lrc.remove(lrc.size()-1);
 		//add beat information
-		int position = 0;
+		/*int position = 0;
 		for(int i = 0; i < lrc.size(); ++i) {
 			lrc.set(i, lrc.get(i) + beatArray.get(position));
 			//System.out.println("add " + beatArray.get(position));
 			position = (position+1) % beatArray.size();
-		}
+		}*/
 		
 		
 		//System.out.println(lrc);
@@ -137,7 +150,7 @@ public class Composer {
 				while(iter.hasNext()) {
 					SequencePair key = (SequencePair) iter.next();
 					if(ArrayContentCompare(current, key.firstSeq)) {
-						System.out.println("!!find for " + startPos + " to "+(startPos+i));
+						System.out.println("!!find for " + startPos + " to "+(startPos+i) +":"+current+" VS "+key.firstSeq+" : "+key.secondSeq);
 						find = true;
 						searchResult = key.secondSeq;
 						successLen+=i;
@@ -156,7 +169,8 @@ public class Composer {
 			if(!find) {
 				System.out.println("cannnot find for any size for " + startPos);
 				startPos++;
-				melo.add(new Integer(0));
+				int a[] = {1,0,-1};
+				melo.add(a[startPos%3]);
 			}
 		}
 		
@@ -342,6 +356,12 @@ public class Composer {
 				pushLrcText(current, stress.length());
 			}
 		}
+		int position = 0;
+		for(int i = 0; i < result.size(); ++i) {
+			result.set(i, result.get(i) + beatArray.get(position));
+			//System.out.println("add " + beatArray.get(position));
+			position = (position+1) % beatArray.size();
+		}
 		return result;
 		
 	}
@@ -487,10 +507,11 @@ public class Composer {
 		
 		
 		int size  = - 1;
-
-
 		int count = 0;
-
+		int countZero = 0;
+		int countZeroMel = 0;
+		boolean allZero = true;
+		boolean allZeroMel = true;
 		while(s.hasNextLine()) {
 			line  = s.nextLine();
 			
@@ -515,20 +536,28 @@ public class Composer {
 				for(int i = 0; i < one.length;++i) {
 					one[i] = one[i].trim();
 				    two[i] = two[i].trim();
+				    if(Integer.parseInt(one[i]) != 0) allZero = false;
+				    if(Integer.parseInt(two[i]) != 0) allZeroMel = false;
 					//System.out.print("[" + one[i] + "]");
 					lrc.add(Integer.parseInt(one[i]));
 					melo.add(Integer.parseInt(two[i]));
 				}
-					
+				if(allZero) countZero++;
+				if(allZeroMel) countZeroMel++;
 				//System.out.println();
 			}
 			if(LRC) {
-				allPatternOne.get(size).add(new SequencePair(lrc,melo));
+				if(!allZero && !allZeroMel){
+					allPatternOne.get(size).add(new SequencePair(lrc,melo));
+				}
 			}
 			else {
 				allPatternTwo.get(size).add(new SequencePair(lrc,melo));
 			}
-		}	
+			allZero = true;
+			allZeroMel = true;
+		}
+		System.out.println(countZero+"@"+countZeroMel);
 		if(s!=null)
 			s.close();
 	}

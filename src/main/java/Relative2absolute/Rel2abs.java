@@ -58,7 +58,7 @@ public class Rel2abs {
 		{{16,16,8,8,8,8},{8,8,8,8,16,16}}*/
 		{},
 		{},
-		{{32,32},{16,48}},
+		{/*{32,32},{16,48}*/},
 		{{8,8,48},{16,32,16},{8,32,24}},
 		{{16,16,16,16},{8,8,32,16}},
 		{{16,8,8,16,16}},
@@ -221,9 +221,11 @@ public class Rel2abs {
 		Composer com = new Composer(inputLrc,beatType,beats);
 		ArrayList<Integer>test = new ArrayList<Integer>();
 		test = com.getMelo();
+		System.out.print("Melo:");
 		for(int i=0;i<test.size();i++){
-			System.out.println("Melo:"+test.get(i));
+			System.out.print(test.get(i)+" ");
 		}
+		System.out.println("");
 		//parse duration
 		ArrayList<Integer> dur = new ArrayList<Integer>();
 		int base = 16;
@@ -287,6 +289,7 @@ public class Rel2abs {
 		JSONArray noteArray = new JSONArray();
 		int k = output.size()-1;
 		int lrcTextIndex = 0;
+		System.out.print("Abs:");
 		//System.out.println(temp.size() + " "+output.size() + " "+output.get(0));
 		for(int i=0;i<newDur.size();i++){
 			//ArrayList<Integer> measure = new ArrayList<Integer>();
@@ -296,8 +299,9 @@ public class Rel2abs {
 			{
 				JSONObject jo = new JSONObject();
 				int key = output.get(k--);
-				while(key > base_period_second_notes[tone][0]+24) key -= 12;
-				while(key < base_period_second_notes[tone][0]-24) key += 12;
+				System.out.print(key+" ");
+				while(key > base_period_second_notes[tone][0]+24 || key > 108) key -= 12;
+				while(key < base_period_second_notes[tone][0]-24 || key < 21) key += 12;
 				jo.put("keys", key);
 				jo.put("duration",""+newDur.get(i).get(j));
 				jo.put("lrcText", com.getLrcText(lrcTextIndex++));
@@ -316,6 +320,7 @@ public class Rel2abs {
 			}
 			noteArray.put(measureArray);
 		}
+		System.out.println("");
 //		for (int j = output.size() - 1; j >=0; j--){
 //			//myMelody.add(output.get(j));
 //			//System.out.println(com.getDur().get(j-1));

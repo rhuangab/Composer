@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class FilePath {
 	static{
-		allPatternOne = "files/allPatternOne.txt";
+		allPatternOne = "src/main/resources/allPatternOne.txt";
 		allPatternTwo = "files/allPatternTwo.txt";
 		generatedMIDI = "files/generatedFile.mid";
 		dictionary = "files/Dictionary";

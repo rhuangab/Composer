@@ -5,6 +5,7 @@ var STAVEWIDTHUNIT = 40;
 var STAVEWIDTH = 200;
 var STAVEHEIGHT = 150;
 var STAVEPADDING = 20;
+var STAVETOPPADDING = 0;
 var SPEEDUNIT = 0.100;
 var SPEEDBASE = 0.500;
 var HARDNESS = 100;
@@ -179,6 +180,12 @@ function drawEmptyStaves()
 		self.selectedScale(temp + parseInt(targetButton.attr('value')));
 		if(self.selectedScale() < 2) self.selectedScale(self.selectedScale()+1);
 		else if(self.selectedScale() > 8) self.selectedScale(self.selectedScale()-1);
+		if(self.selectedScale() >= 6){
+			STAVETOPPADDING = [20,35,105][self.selectedScale()%6];
+		}
+		else{
+			STAVETOPPADDING = 0;
+		}
 	});
 	$(".speed").click(function(event){
 		targetButton = $(event.target).closest('.speed');
@@ -250,6 +257,10 @@ function drawEmptyStaves()
 			//self.canvas.curPlayInfo.setDefaultValue();
 			setTimeout(function(){$(".player[value='stop']").click()},speed);
 		}
+		if(self.canvas.curPlayInfo.curPlayCol == 0 && self.canvas.curPlayInfo.curPlayIndex == 0)
+		{
+			$('.middle-frame').animate({scrollTop:curNote.ys[0]-100}, '500');
+		}
  	}
 	self.playerState.subscribe(function(newValue) {
 		var canvas = self.canvas;
@@ -293,6 +304,7 @@ ViewModel.Canvas = function()
 	self.subscriptionCollection = [];
 	self.staves = [];
 	self.drawTempoStaveBar = function(x,y,width, tempo, tempo_y, notes) {
+		if(y == 0) y = STAVETOPPADDING+y;
     var staveBar = new Vex.Flow.Stave(self.padding + x, y, width);
     if (x == 0) {
  			staveBar.addClef("treble");
@@ -345,7 +357,7 @@ ViewModel.Canvas = function()
 		{
 			for(var j=0;j<self.notes[i].length;j++)
 			{
- 				self.drawTempoStaveBar(self.staveWidth*j,self.staveHeight*i,self.staveWidth, {}, 0,self.notes[i][j]);
+ 				self.drawTempoStaveBar(self.staveWidth*j,(STAVEHEIGHT+STAVETOPPADDING)*i,self.staveWidth, {}, 0,self.notes[i][j]);
 			}
 		}
  	}
@@ -521,7 +533,7 @@ ViewModel.Canvas = function()
 
 
 $(document).ready(function($) {
-	setLoad('Loading MIDI sound');
+	//setLoad('Loading MIDI sound');
 	myViewModel = new ViewModel();
 	ko.applyBindings(myViewModel);
 	drawEmptyStaves();
@@ -590,7 +602,7 @@ $(document).ready(function($) {
 			}
 		});
 	});
-	//$("input[name=lrc]").val("I'm at a payphone, trying to call home. All of my change I spent on you. Where have the times gone");
-	//$("#create_button").click();
+	$("input[name=lrc]").val("I'm at a payphone, trying to call home. All of my change I spent on you. Where have the times gone");
+	$("#create_button").click();
 		
 });
