@@ -56,23 +56,7 @@ public class Composer {
 	public static void main(String[] args) throws IOException, InvalidMidiDataException {
 		
 		String input  = "In this Map example, we will learn how to check if HashMap is empty in Java. There are two ways to find out if Map is empty, one is using size() method, if size is zero means Map is empty. Another way to check if HashMap is empty is using more readable isEmpty() method which returns true if Map is empty. Here is code example:";
-	    //String input = "This is ! ? good.";
-		//input = "Close your eyes and roll a dice Under the board there's a compromise If after all we only lived twice Which lies the run road to paradise Don't say a word, here comes the break of the day And wide clouds of sand raised by the wind of the end of May Close your eyes and make a betFace to the glare of the sunset";
 		Composer com = new Composer(input,4,4);
-
-		
-		//test
-	    //Sequence sequence = MidiSystem.getSequence(new File("/Users/jzhaoaf/Desktop/2_hearts.mid"));
-		//Sequence sequence = generateSequence(melo,dur);
-		
-		
-	   
-	    //play the generate sequence
-	    //MidiPlayer myPlayer = new MidiPlayer();
-	    //myPlayer.play(sequence, false);
-	    //myPlayer.stop();
-	
-		
 	}
 
 
@@ -211,7 +195,7 @@ public class Composer {
 				while(iter.hasNext()) {
 					SequencePair key = (SequencePair) iter.next();
 					if(ArrayContentCompare(current, key.firstSeq)) {
-						System.out.println("**Durfind for " + startPos + " to "+(startPos+i));
+						//System.out.println("**Durfind for " + startPos + " to "+(startPos+i));
 						find = true;
 						findDurLen += i;
 						searchResult = key.secondSeq;
@@ -230,14 +214,14 @@ public class Composer {
 			}
 			//cannot find for at least length two
 			if(!find) {
-				System.out.println("DDDDur cannot find for "+ startPos);
+				//System.out.println("DDDDur cannot find for "+ startPos);
 				startPos++;
 				notfindDurLen++;
 				dur.add(a[index%3]);
 			}
 			
 		}
-		System.out.println("Find:"+findDurLen+",notFind:"+notfindDurLen);
+		//System.out.println("Find:"+findDurLen+",notFind:"+notfindDurLen);
 		//deal with the end 
 		while(startPos< lrc.size() && startPos!= lrc.size()) {
 			dur.add(new Integer(1));
@@ -398,7 +382,7 @@ public class Composer {
 //		
 //	}
 	
-	
+	/*
 	public static Sequence generateSequence(ArrayList<Integer> melo,ArrayList<Integer> dur) throws InvalidMidiDataException, IOException {
 		// TODO Auto-generated method stub
 		Sequence sequence = new Sequence(Sequence.PPQ, resolution);
@@ -474,7 +458,7 @@ public class Composer {
 			mm = new ShortMessage();
 			mm.setMessage(0x80,0x3C,0x40);
 			me = new MidiEvent(mm,(long)121);
-			t.add(me);*/
+			t.add(me);
 			
 			
 			
@@ -492,7 +476,7 @@ public class Composer {
 		File f = new File(FilePath.generatedMIDI);
 		MidiSystem.write(sequence,1,f);
 		return sequence;
-	}
+	}*/
 	
 	private static void readInPatterns(String filename,boolean LRC) throws FileNotFoundException {
 		// TODO Auto-generated method stub

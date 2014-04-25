@@ -56,15 +56,19 @@ public class Rel2abs {
 		{{16,16,16,16},{8,8,32,16}},
 		{{16,8,8,16,16}},
 		{{16,16,8,8,8,8},{8,8,8,8,16,16}}*/
-		{{64}},
+		{},
+		{},
 		{{32,32},{16,48}},
 		{{8,8,48},{16,32,16},{8,32,24}},
 		{{16,16,16,16},{8,8,32,16}},
 		{{16,8,8,16,16}},
-		{{16,16,8,8,8,8},{8,8,8,8,16,16}}
+		{{16,16,8,8,8,8},{8,8,8,8,16,16}},
+		{{}},
+		{{}}
 	};
 	
 	public static int[][][] freDurPatternForRest = {
+		{},
 		{{16},{32}},
 		{{16,16},{8,8}}
 	};
@@ -178,7 +182,7 @@ public class Rel2abs {
 						jo.put(tempJsonArr.get(m));
 					}
 					curInput = "";
-					System.out.println(tempJsonArr.toString());
+					//System.out.println(tempJsonArr.toString());
 				}
 				else if(i == commas[index].length-1){
 					if(curInput.split(" ").length >= 2){
@@ -188,7 +192,7 @@ public class Rel2abs {
 							jo.put(tempJsonArr.get(m));
 						}
 						curInput = "";
-						System.out.println(tempJsonArr.toString());
+						//System.out.println(tempJsonArr.toString());
 					}
 				}
 				else{
@@ -199,7 +203,7 @@ public class Rel2abs {
 							jo.put(tempJsonArr.get(m));
 						}
 						curInput = "";
-						System.out.println(tempJsonArr.toString());
+						//System.out.println(tempJsonArr.toString());
 					}
 				}
 			}
@@ -217,6 +221,9 @@ public class Rel2abs {
 		Composer com = new Composer(inputLrc,beatType,beats);
 		ArrayList<Integer>test = new ArrayList<Integer>();
 		test = com.getMelo();
+		for(int i=0;i<test.size();i++){
+			System.out.println("Melo:"+test.get(i));
+		}
 		//parse duration
 		ArrayList<Integer> dur = new ArrayList<Integer>();
 		int base = 16;
@@ -343,29 +350,37 @@ public class Rel2abs {
 		return result;
 	}
 	
+	public static int getRandom(int length){
+		int nextLen = (int) (Math.random()*(Math.min(length,8)))+1;
+		while(freDurPattern[nextLen].length == 0){ nextLen = (int) (Math.random()*(Math.min(length,6)))+1;}
+		if(nextLen >= 7) nextLen = 4;
+		return nextLen;
+	}
+	
 	public static ArrayList<ArrayList<Integer> > adjustDur(ArrayList<Integer> dur, int sum)
 	{
 		ArrayList<ArrayList<Integer> > result = new ArrayList<ArrayList<Integer> >();
 		if(true){
 			int length = dur.size();
 			int curRemain = length;
+			int count = 0;
 			while(length > 2)
 			{
-				int nextLen = (int) (Math.random()*(Math.min(length,5)))+2;
-				int durSeq[] = freDurPattern[nextLen-1][(int) (Math.random()*freDurPattern[nextLen-1].length)];
-				//for()
+				int nextLen = getRandom(length);
+				int durSeq[] = freDurPattern[nextLen][(int) (Math.random()*freDurPattern[nextLen].length)];
 				ArrayList<Integer> measure  = new ArrayList<Integer>();
-				for(int a : durSeq){ measure.add(a);}
+				for(int a : durSeq){ measure.add(a);count++;}
 				result.add(measure);
 				length -= nextLen;
 			}
 			if(length >= 1 && length <= 2)
 			{
-				int durSeq[] = freDurPatternForRest[length-1][(int) (Math.random()*freDurPatternForRest[length-1].length)];
+				int durSeq[] = freDurPatternForRest[length][(int) (Math.random()*freDurPatternForRest[length].length)];
 				ArrayList<Integer> measure  = new ArrayList<Integer>();
-				for(int a : durSeq){ measure.add(a);}
+				for(int a : durSeq){ measure.add(a);count++;}
 				result.add(measure);
 			}
+			//System.out.println(count+" origin: "+dur.size());
 			return result;
 		}
 		
