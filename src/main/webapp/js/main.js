@@ -521,7 +521,7 @@ ViewModel.Canvas = function()
 
 
 $(document).ready(function($) {
-	//setLoad('Loading MIDI sound');
+	setLoad('Loading MIDI sound');
 	myViewModel = new ViewModel();
 	ko.applyBindings(myViewModel);
 	drawEmptyStaves();
