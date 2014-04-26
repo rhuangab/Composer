@@ -2,10 +2,10 @@ var ROOT = "/theComposerServlet";
 var CHORDNUM = 4;
 var NOTENUM = 4;
 var STAVEWIDTHUNIT = 40;
-var STAVEWIDTH = 200;
+var STAVEWIDTH = 250;
 var STAVEHEIGHT = 150;
 var STAVEPADDING = 20;
-var STAVETOPPADDING = 0;
+var STAVETOPPADDING = 10;
 var SPEEDUNIT = 0.100;
 var SPEEDBASE = 0.500;
 var HARDNESS = 100;
@@ -49,7 +49,7 @@ function copyVexNote(oldNote,newPitchValue)
 function newAnnotation(text) {
 	return (
 					new Vex.Flow.Annotation(text)).
-	setFont("Times", 10).
+	setFont("Times", 14).
 	setVerticalJustification(Vex.Flow.Annotation.VerticalJustify.BOTTOM);
 }
 
@@ -92,7 +92,7 @@ function createVexNote(note_struct)
 		if(key.length == 4) singleNote.addAccidental(0, new Vex.Flow.Accidental("b"));
 		singleNote.hasDot = hasDot;
 		if(hasDot) singleNote.addDotToAll();
-		if(note_struct.keys > 70)
+		if(note_struct.keys > 85)
 			singleNote.setStemDirection(-1);
 		singleNote.isRestNote = false;
 		if(note_struct.lrcText){
@@ -156,7 +156,7 @@ function drawEmptyStaves()
 		targetButton.focus();
 		self.selectedBeats = targetButton.attr('beats');
 		self.selectedBeatType = targetButton.attr('beats-type');
-		STAVEWIDTH = self.selectedBeats * STAVEWIDTHUNIT;
+		//STAVEWIDTH = self.selectedBeats * STAVEWIDTHUNIT;
 	});
 	$(".major").click(function(event){
 		targetButton = $(event.target).closest('.major');
@@ -184,7 +184,7 @@ function drawEmptyStaves()
 			STAVETOPPADDING = [20,35,105][self.selectedScale()%6];
 		}
 		else{
-			STAVETOPPADDING = 0;
+			STAVETOPPADDING = 10;
 		}
 	});
 	$(".speed").click(function(event){
@@ -602,7 +602,7 @@ $(document).ready(function($) {
 			}
 		});
 	});
-	$("input[name=lrc]").val("I'm at a payphone, trying to call home. All of my change I spent on you. Where have the times gone");
+	$("input[name=lrc]").val("I'm at a payphone, trying to call home. All of my change I spent on you. Where have the times gone, Baby. It's all wrong, where are the plans we made for two? Yeah, I, I know it's hard to remember, The people we used to be. It's even harder to picture. That you're not here next to me. You say it's too late to make it. But is it too late to try?");
 	$("#create_button").click();
 		
 });

@@ -61,7 +61,17 @@ public class Rel2abs {
 		{},
 		{},
 		{},//4-2
-		{},//4-3
+		{
+		{},
+		{},
+		{{16,32}},
+		{{16,16,16}},
+		{{8,8,16,16},{16,16,8,8}},
+		{{8,8,8,8,16},{16,8,8,8,8}},
+		{{}},
+		{{}},
+		{{}}
+		},//4-3
 		{{},
 		{},
 		{/*{32,32},{16,48}*/},
@@ -70,24 +80,45 @@ public class Rel2abs {
 		{{16,8,8,16,16},{8,8,16,16,16},{16,16,8,8,16}},
 		{{16,16,8,8,8,8},{8,8,8,8,16,16}},
 		{{}},
+		{{}},
 		{{}}
 		},//4-4
 		{},//4-5
-		{}
+		{
+				{},
+				{},
+				{/*{32,32},{16,48}*/},
+				{{32,32,32}},
+				{{16,16,32,32},{16,32,32,16},{32,32,16,16}},
+				{{16,16,16,16,32},{16,8,8,32,32},{8,8,16,32,32},{32,16,16,16,16}},
+				{{16,16,16,16,16,16},{8,8,16,16,32,32}},
+				{{8,8,8,8,16,32,32},{8,8,16,16,16,16,16}},
+				{{8,8,16,16,8,8,16,16},{8,8,16,16,16,8,8,16}},
+				{{}},
+				{{}},
+				{{}}
+		}
 	};
 	
 	public static int[][][][] freDurPatternForRest = {
 		{},
 		{},
 		{},//4-2
-		{},//4-3
+		{
+		{},
+		{{16},{32}},
+		{{16,16},{8,8}}
+		},//4-3
 		{
 		{},
 		{{16},{32}},
 		{{16,16},{8,8}}
 		},//4-4
 		{},//4-5
-		{}
+		{
+		{{32},{64}},
+		{{32,32},{16,32},{16,64}}
+		}
 	};
 	
 	public static int [][] base_period_second_notes = {
@@ -385,9 +416,12 @@ public class Rel2abs {
 	}
 	
 	public static int getRandom(int beats,int length){
-		int nextLen = (int) (Math.random()*(Math.min(length,8)))+1;
+		System.out.println(beats + " : " + length);
+		int nextLen = (int) (Math.random()*(Math.min(length,beats+5)))+1;
+		System.out.println(nextLen);
 		while(freDurPattern[beats][nextLen].length == 0){ nextLen = (int) (Math.random()*(Math.min(length,6)))+1;}
-		if(nextLen >= 7) nextLen = 4;
+		
+		if(nextLen >= beats+3) nextLen = beats;
 		return nextLen;
 	}
 	
