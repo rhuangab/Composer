@@ -59,7 +59,30 @@ public class Composer {
 	}
 
 	public static void main(String[] args) throws IOException, InvalidMidiDataException {
+		RecordManager recman = RecordManagerFactory.createRecordManager(FilePath.dictionary);
+		long recid = recman.getNamedObject("Pattern");
+		if(recid!=0) {
+          	hashtable  = HTree.load(recman, recid);
+          	//System.out.println("can open dictionary");
+          }
+          else {
+          	hashtable = HTree.createInstance(recman);
+          	recman.setNamedObject("Pattern", hashtable.getRecid());
+          }
+		Scanner ins = new Scanner(System.in);
+		while(true)
+		{
+			System.out.print("Input an array: ");
+			String inputString = ins.nextLine();
+			if(inputString == "richeng") break;
+			ArrayList<ArrayList<Integer> > meloArr = (ArrayList<ArrayList<Integer>>) hashtable.get(inputString);
+			if(meloArr != null)
+				System.out.println(meloArr.size() + " "+meloArr.toString());
+		}
+		//ArrayList<ArrayList<Integer> > meloArr = hashtable.get(key) 
 		
+		recman.close();
+		if(true) return;
 		String input  = "In this Map example, we will learn how to check if HashMap is empty in Java. There are two ways to find out if Map is empty, one is using size() method, if size is zero means Map is empty. Another way to check if HashMap is empty is using more readable isEmpty() method which returns true if Map is empty. Here is code example:";
 		//Composer com = new Composer(input,4,4);
 		if(allPatternOne == null){
@@ -70,6 +93,8 @@ public class Composer {
 			readInPatterns(FilePath.allPatternOne,true);
 		}
 		out(allPatternOne.get(3).size());
+		recman.commit();
+		recman.close();
 	}
 
 
@@ -498,7 +523,7 @@ public class Composer {
 		return sequence;
 	}*/
 	
-	private static void readInPatterns(String filename,boolean LRC) throws FileNotFoundException {
+	private static void readInPatterns(String filename,boolean LRC) throws IOException {
 		// TODO Auto-generated method stub
 		Scanner s = new Scanner(new File(filename));
 		String line;
@@ -549,6 +574,17 @@ public class Composer {
 			if(LRC) {
 				if(!allZero && !allZeroMel){
 					allPatternOne.get(size).add(new SequencePair(lrc,melo));
+					/*ArrayList<ArrayList<Integer> > meloArr =  (ArrayList<ArrayList<Integer>>) hashtable.get(lrc.toString());
+					if(meloArr == null)
+					{
+						meloArr = new ArrayList<ArrayList<Integer> >();
+						meloArr.add(melo);
+						hashtable.put(lrc.toString(), meloArr);
+					}
+					else{
+						meloArr.add(melo);
+						hashtable.put(lrc.toString(), meloArr);
+					}*/
 				}
 			}
 			else {

@@ -24,6 +24,7 @@ public class Rel2abs {
 		{true,false,true,false,true,false,true,true,false,true,false,true},//G-Major
 		{false,true,true,false,true,false,true,true,false,true,false,true},//D-Major
 		{false,true,true,false,true,false,true,false,true,true,false,true},//A-Major
+		{true,false,true,true,false,true,false,true,true,false,true,false},//C-Minor
 		{false,true,false,true,true,false,true,false,true,true,false,true},//E-Major
 		{false,true,false,true,true,false,true,false,true,false,true,true},//B-Major
 		{true,false,true,false,true,true,false,true,false,true,true,false},//F-Major
@@ -39,6 +40,7 @@ public class Rel2abs {
 		{7,9,11,0,2,4,6},//G-Major
 		{2,4,6,7,9,11,1},//D-Major
 		{9,11,1,2,4,6,8},//A-Major
+		{0,2,3,5,7,8,10},//C-Minor
 		{4,6,8,9,11,1,3},//E-Major
 		{11,1,3,4,6,8,10},//B-Major
 		{5,7,9,10,0,2,4},//F-Major
@@ -49,7 +51,7 @@ public class Rel2abs {
 		{8,10,11,1,3,5,6},//bG-Major
 		};
 	
-	public static int[][][] freDurPattern = {
+	public static int[][][][] freDurPattern = {
 		/*{{64},{16,-48},{32,-32}},
 		{{32,32},{16,48},{16,16,-32},{8,8,-48}},
 		{{8,8,48},{16,32,16},{8,32,24}},
@@ -58,23 +60,38 @@ public class Rel2abs {
 		{{16,16,8,8,8,8},{8,8,8,8,16,16}}*/
 		{},
 		{},
+		{},//4-2
+		{},//4-3
+		{{},
+		{},
 		{/*{32,32},{16,48}*/},
-		{{8,8,48},{16,32,16},{8,32,24}},
-		{{16,16,16,16},{8,8,32,16}},
-		{{16,8,8,16,16}},
+		{{16,16,32},{16,32,16}},
+		{{16,16,16,16},{8,8,32,16},{16,16,16,16}},
+		{{16,8,8,16,16},{8,8,16,16,16},{16,16,8,8,16}},
 		{{16,16,8,8,8,8},{8,8,8,8,16,16}},
 		{{}},
 		{{}}
+		},//4-4
+		{},//4-5
+		{}
 	};
 	
-	public static int[][][] freDurPatternForRest = {
+	public static int[][][][] freDurPatternForRest = {
+		{},
+		{},
+		{},//4-2
+		{},//4-3
+		{
 		{},
 		{{16},{32}},
 		{{16,16},{8,8}}
+		},//4-4
+		{},//4-5
+		{}
 	};
 	
 	public static int [][] base_period_second_notes = {
-		{60,64,67}, {67,71,74}, {62,66,69}, {69,73,76}, {64,68,71}, {71,75,78},
+		{60,64,67}, {67,71,74}, {62,66,69}, {69,73,76}, {60,67,71}, {64,68,71}, {71,75,78},
 		{65,69,72}, {70,74,77}, {63,67,71}, {68,72,75}, {61,65,68}, {66,70,73}
 		};
 	
@@ -265,7 +282,7 @@ public class Rel2abs {
 		for(int i=dur.size()-1;i>= 0;--i){
 			temp.add(dur.get(i));
 		}
-		ArrayList<ArrayList<Integer> > newDur = adjustDur(temp,sumInEveryMeasure);
+		ArrayList<ArrayList<Integer> > newDur = adjustDur(beats,temp,sumInEveryMeasure);
 		//System.out.println(maxDur + " " + minDur);
 		
 		//System.out.println(test.size() + " "+ com.getDur().size());
@@ -297,16 +314,18 @@ public class Rel2abs {
 			int curSum  = 0;
 			for(int j=0;j<newDur.get(i).size();j++)
 			{
-				JSONObject jo = new JSONObject();
-				int key = output.get(k--);
-				System.out.print(key+" ");
-				while(key > base_period_second_notes[tone][0]+24 || key > 108) key -= 12;
-				while(key < base_period_second_notes[tone][0]-24 || key < 21) key += 12;
-				jo.put("keys", key);
-				jo.put("duration",""+newDur.get(i).get(j));
-				jo.put("lrcText", com.getLrcText(lrcTextIndex++));
-				measureArray.put(jo);
-				curSum +=newDur.get(i).get(j);
+				if(newDur.get(i).get(j) > 0){
+					JSONObject jo = new JSONObject();
+					int key = output.get(k--);
+					System.out.print(key+" ");
+					while(key > base_period_second_notes[tone][0]+24 || key > 108) key -= 12;
+					while(key < base_period_second_notes[tone][0]-24 || key < 21) key += 12;
+					jo.put("keys", key);
+					jo.put("duration",""+newDur.get(i).get(j));
+					jo.put("lrcText", com.getLrcText(lrcTextIndex++));
+					measureArray.put(jo);
+					curSum +=newDur.get(i).get(j);
+				}
 			}
 			if(curSum < sumInEveryMeasure)
 			{
@@ -319,6 +338,16 @@ public class Rel2abs {
 				measureArray.put(jo);
 			}
 			noteArray.put(measureArray);
+			if(i == newDur.size()-1 && curSum == sumInEveryMeasure)
+			{
+				measureArray = new JSONArray();
+				JSONObject jo = new JSONObject();
+				jo.put("keys", -1);
+				jo.put("duration",""+sumInEveryMeasure);
+				jo.put("lrcText","");
+				measureArray.put(jo);
+				noteArray.put(measureArray);
+			}
 		}
 		System.out.println("");
 //		for (int j = output.size() - 1; j >=0; j--){
@@ -355,14 +384,14 @@ public class Rel2abs {
 		return result;
 	}
 	
-	public static int getRandom(int length){
+	public static int getRandom(int beats,int length){
 		int nextLen = (int) (Math.random()*(Math.min(length,8)))+1;
-		while(freDurPattern[nextLen].length == 0){ nextLen = (int) (Math.random()*(Math.min(length,6)))+1;}
+		while(freDurPattern[beats][nextLen].length == 0){ nextLen = (int) (Math.random()*(Math.min(length,6)))+1;}
 		if(nextLen >= 7) nextLen = 4;
 		return nextLen;
 	}
 	
-	public static ArrayList<ArrayList<Integer> > adjustDur(ArrayList<Integer> dur, int sum)
+	public static ArrayList<ArrayList<Integer> > adjustDur(int beats,ArrayList<Integer> dur, int sum)
 	{
 		ArrayList<ArrayList<Integer> > result = new ArrayList<ArrayList<Integer> >();
 		if(true){
@@ -371,8 +400,8 @@ public class Rel2abs {
 			int count = 0;
 			while(length > 2)
 			{
-				int nextLen = getRandom(length);
-				int durSeq[] = freDurPattern[nextLen][(int) (Math.random()*freDurPattern[nextLen].length)];
+				int nextLen = getRandom(beats,length);
+				int durSeq[] = freDurPattern[beats][nextLen][(int) (Math.random()*freDurPattern[beats][nextLen].length)];
 				ArrayList<Integer> measure  = new ArrayList<Integer>();
 				for(int a : durSeq){ measure.add(a);count++;}
 				result.add(measure);
@@ -380,7 +409,7 @@ public class Rel2abs {
 			}
 			if(length >= 1 && length <= 2)
 			{
-				int durSeq[] = freDurPatternForRest[length][(int) (Math.random()*freDurPatternForRest[length].length)];
+				int durSeq[] = freDurPatternForRest[beats][length][(int) (Math.random()*freDurPatternForRest[beats][length].length)];
 				ArrayList<Integer> measure  = new ArrayList<Integer>();
 				for(int a : durSeq){ measure.add(a);count++;}
 				result.add(measure);

@@ -57,7 +57,7 @@
 		
   <style id="holderjs-style" type="text/css"></style></head>
 
-  <body>
+  <body background="./image/bg.jpg">
 		<div id="controlTips" class="panel panel-info">
 			<table style="
 				margin: 5px;
@@ -109,21 +109,21 @@
 							margin-left: 25%;
 							"role="toolbar">
 								<div class="btn-group" data-toggle="buttons" style="float:left">
-									<button type="button" class="btn btn-primary player" value="play"><span class="glyphicon glyphicon-play"></span></button>
-									<button type="button" class="btn btn-primary player" value="pause"><span class="glyphicon glyphicon-pause"></span></button>
-									<button type="button" class="btn btn-primary player active" value="stop"><span class="glyphicon glyphicon-stop"></span></button>
+									<button type="button" class="btn btn-info player" value="play"><span class="glyphicon glyphicon-play"></span></button>
+									<button type="button" class="btn btn-info player" value="pause"><span class="glyphicon glyphicon-pause"></span></button>
+									<button type="button" class="btn btn-info player active" value="stop"><span class="glyphicon glyphicon-stop"></span></button>
 								</div>
 								<div class="btn-group">
-									<button type="button" class="btn btn-primary scale" value="1"><span class="glyphicon glyphicon-chevron-up"></span></button>
-									<button type="button" class="btn btn-primary"><span>Octave</span></button>
-									<button type="button" class="btn btn-primary"><span data-bind="text:selectedScale"></span></button>
-									<button type="button" class="btn btn-primary scale" value="-1"><span class="glyphicon glyphicon-chevron-down"></span></button>
+									<button type="button" class="btn btn-info scale" value="1"><span class="glyphicon glyphicon-chevron-up"></span></button>
+									<button type="button" class="btn btn-info"><span>Octave</span></button>
+									<button type="button" class="btn btn-info"><span data-bind="text:selectedScale"></span></button>
+									<button type="button" class="btn btn-info scale" value="-1"><span class="glyphicon glyphicon-chevron-down"></span></button>
 								</div>
 								<div class="btn-group" style="float:left">
-									<button type="button" class="btn btn-primary speed" value=1><span class="glyphicon glyphicon-plus"></span></button>
-									<button type="button" class="btn btn-primary"><span>Speed</span></button>
-									<button type="button" class="btn btn-primary"><span data-bind="text:playSpeed"></span></button>
-									<button type="button" class="btn btn-primary speed" value=-1><span class="glyphicon glyphicon-minus"></span></button>
+									<button type="button" class="btn btn-info speed" value=1><span class="glyphicon glyphicon-plus"></span></button>
+									<button type="button" class="btn btn-info"><span>Speed</span></button>
+									<button type="button" class="btn btn-info"><span data-bind="text:playSpeed"></span></button>
+									<button type="button" class="btn btn-info speed" value=-1><span class="glyphicon glyphicon-minus"></span></button>
 								</div>
 							</div>
 						<!--</div>-->
@@ -131,22 +131,23 @@
 					<div class="row custom-row">
 						<!--<div class="col-lg-1"></div>
 						<div class="col-lg-7">-->
-							<div class="btn-toolbar" style="margin-left: 24%;float:left" role="toolbar">
+							<div class="btn-toolbar" style="margin-left: 20%;float:left" role="toolbar">
 								<div class="btn-group" data-toggle="buttons">
-									<button type="button" class="btn btn-primary beats" value="play" beats='6' beats-type='4'><span>4/6</span></button>
-									<button type="button" class="btn btn-primary beats" value="play" beats='5' beats-type='4'><span>4/5</span></button>
-									<button type="button" class="btn btn-primary beats active" value="play" beats='4' beats-type='4'><span>4/4</span></button>
-									<button type="button" class="btn btn-primary beats" value="play" beats='3' beats-type='4'><span>4/3</span></button>
-									<button type="button" class="btn btn-primary beats" value="play" beats='2' beats-type='4'><span>4/2</span></button>
+									<button type="button" class="btn btn-info beats" value="play" beats='6' beats-type='4'><span>4/6</span></button>
+									<button type="button" class="btn btn-info beats" value="play" beats='5' beats-type='4'><span>4/5</span></button>
+									<button type="button" class="btn btn-info beats active" value="play" beats='4' beats-type='4'><span>4/4</span></button>
+									<button type="button" class="btn btn-info beats" value="play" beats='3' beats-type='4'><span>4/3</span></button>
+									<button type="button" class="btn btn-info beats" value="play" beats='2' beats-type='4'><span>4/2</span></button>
 								</div>
 								<div class="btn-group" data-toggle="buttons">
-									<button type="button" class="btn btn-primary major active" value="0"><span>C Major</span></button>
-									<button type="button" class="btn btn-primary major" value="1"><span>G Major</span></button>
-									<button type="button" class="btn btn-primary major" value="2"><span>D Major</span></button>
-									<button type="button" class="btn btn-primary major" value="3"><span>A Major</span></button>
+									<button type="button" class="btn btn-info major active" value="0"><span>C Major</span></button>
+									<button type="button" class="btn btn-info major" value="1"><span>G Major</span></button>
+									<button type="button" class="btn btn-info major" value="2"><span>D Major</span></button>
+									<button type="button" class="btn btn-info major" value="3"><span>A Major</span></button>
+									<button type="button" class="btn btn-info major" value="3"><span>C Minor</span></button>
 								</div>
 								<!--<div class="btn-group" data-toggle="buttons" data-bind="foreach:octaveArray">
-									<label class="btn btn-primary" data-bind="attr:{id:$index}">
+									<label class="btn btn-info" data-bind="attr:{id:$index}">
 										<input type="radio" name="options" data-bind="value:$data,bsChecked:$root.octave" >
 										<span data-bind="text:$data"></span>
 									</label>
@@ -162,12 +163,12 @@
 						</div>
 						<div class="col-lg-6">-->
 							<div class="btn-group" data-toggle="buttons" style="margin-left: 26%;float:left">
-								<button type="button" class="btn btn-primary instrument active" value=0><span>Piano</span></button>
-								<button type="button" class="btn btn-primary instrument" value=24><span>Guitar</span></button>
-								<button type="button" class="btn btn-primary instrument" value=40><span>Violin</span></button>
-								<button type="button" class="btn btn-primary instrument" value=9><span>Glockenspiel</span></button>
-								<button type="button" class="btn btn-primary instrument" value=112><span>Tinkle Bell</span></button>
-								<button type="button" class="btn btn-primary instrument" value=66><span>Tenor Sax</span></button>
+								<button type="button" class="btn btn-info instrument active" value=0><span>Piano</span></button>
+								<button type="button" class="btn btn-info instrument" value=24><span>Guitar</span></button>
+								<button type="button" class="btn btn-info instrument" value=40><span>Violin</span></button>
+								<button type="button" class="btn btn-info instrument" value=9><span>Glockenspiel</span></button>
+								<button type="button" class="btn btn-info instrument" value=112><span>Tinkle Bell</span></button>
+								<button type="button" class="btn btn-info instrument" value=66><span>Tenor Sax</span></button>
 							</div>
 						<!--</div>-->
 					</div>
