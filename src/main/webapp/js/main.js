@@ -96,7 +96,7 @@ function createVexNote(note_struct)
 			singleNote.setStemDirection(-1);
 		singleNote.isRestNote = false;
 		if(note_struct.lrcText){
-			console.log(note_struct.lrcText);
+			//console.log(note_struct.lrcText);
 			singleNote.addAnnotation(0, newAnnotation(note_struct.lrcText));
 		}
 		return singleNote;
@@ -327,7 +327,7 @@ ViewModel.Canvas = function()
 			}
 			else{
 				if(consecutiveSmallNotes >= 2){
-					console.log(notes.slice(i-consecutiveSmallNotes,i));
+					//console.log(notes.slice(i-consecutiveSmallNotes,i));
  					beams.push(new Vex.Flow.Beam(notes.slice(i-consecutiveSmallNotes,i)));
  				}
 				consecutiveSmallNotes = 0;
