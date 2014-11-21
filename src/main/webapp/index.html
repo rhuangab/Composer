@@ -60,7 +60,8 @@
 				margin: 5px;
 				">
 				<tbody>
-					<tr><th colspan="2">Control Tips:</th></tr>
+
+					<tr><th colspan="2">Control:</th></tr>
 					<tr>
 						<td style="
 							float: left;
@@ -71,7 +72,7 @@
 						<td style="
 							float: left;
 							">PitchValue:</td>
-						<td>[<br />]</td>
+						<td>[: increase<br />]: decrease</td>
 					</tr>
 				</tbody>
 			</table></div>
@@ -143,13 +144,6 @@
 									<button type="button" class="btn btn-info major" value="3"><span>A Major</span></button>
 									<button type="button" class="btn btn-info major" value="3"><span>C Minor</span></button>
 								</div>
-								<!--<div class="btn-group" data-toggle="buttons" data-bind="foreach:octaveArray">
-									<label class="btn btn-info" data-bind="attr:{id:$index}">
-										<input type="radio" name="options" data-bind="value:$data,bsChecked:$root.octave" >
-										<span data-bind="text:$data"></span>
-									</label>
-								</div>-->
-							<!--</div>-->
 						</div>
 					</div>
 					<div class="row custom-row">
@@ -182,6 +176,10 @@
 							</div><!-- /input-group -->
 							</form>
 						</div><!-- /.col-lg-8 -->
+					</div>
+					<div class="row custom-row">
+						<div class="col-lg-1"></div>
+						<div id="tips" class="col-lg-9">Seperating sentences by explicit comma(,) or period(.) could get better result.</div>
 					</div>
 
           <div class="mastfoot">

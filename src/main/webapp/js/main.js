@@ -107,7 +107,7 @@ function drawEmptyStaves()
 {
 	var canvas = $("canvas")[0];
 	var renderer = new Vex.Flow.Renderer(canvas,
-																	 Vex.Flow.Renderer.Backends.CANVAS);
+		Vex.Flow.Renderer.Backends.CANVAS);
 	var ctx = renderer.getContext();
 	var padding = STAVEPADDING;
 	var x = 0;
@@ -207,7 +207,6 @@ function drawEmptyStaves()
 	MIDI.loadPlugin({
 			soundfontUrl: "./soundfont/",
 			instruments: ["acoustic_grand_piano","glockenspiel","acoustic_guitar_nylon","violin","tenor_sax","tinkle_bell"],
-			//instrument: "acoustic_guitar_nylon",
 			callback: function() {
 				//$("#loadingMask").fadeOut(1000);
 				deleteLoad();
@@ -289,7 +288,7 @@ ViewModel.Canvas = function()
 	self.notes = preDefNotes;
 	self.staveWidth = STAVEWIDTH;
 	self.staveHeight = STAVEHEIGHT;
-	$("canvas").attr('height',self.staveHeight*preDefNotes.length);
+	$("canvas").attr('height',self.staveHeight*preDefNotes.length+40/*For last line padding*/);
 	self.canvas = $("canvas")[0];
 	self.renderer = new Vex.Flow.Renderer(self.canvas,
 		Vex.Flow.Renderer.Backends.CANVAS);

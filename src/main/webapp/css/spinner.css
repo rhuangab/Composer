@@ -1,8 +1,12 @@
-#controlTips {
+#tips{
+  background-color: rgba(0, 0, 0, 0.14);  
+}
+
+#controlTips{
 	position: absolute;
-	top: 75%;
-left: 85%;
-width: auto;
+	top: 72%;
+  left: 82%;
+  width: auto;
 	//height: 25%;
 	background-color: rgba(0, 0, 0, 0.14);
 }
